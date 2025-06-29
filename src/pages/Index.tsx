@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { WeatherCard } from "@/components/WeatherCard";
 import { WardrobeSection } from "@/components/WardrobeSection";
@@ -9,27 +9,16 @@ import { VoiceAssistant } from "@/components/VoiceAssistant";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useWardrobe } from "@/hooks/useWardrobe";
+import { useWeather } from "@/hooks/useWeather";
+import { OutfitSuggestion } from "@/services/outfitService";
 
 const Index = () => {
-  const [weather, setWeather] = useState(null);
-  const [currentOutfit, setCurrentOutfit] = useState(null);
+  const [currentOutfit, setCurrentOutfit] = useState<OutfitSuggestion | null>(null);
   
   const { user, signOut } = useAuth();
   const { items: wardrobeItems } = useWardrobe();
+  const { weather, loading: weatherLoading, error: weatherError, refetch } = useWeather();
   const navigate = useNavigate();
-
-  // Симуляция загрузки погодных данных
-  useEffect(() => {
-    setTimeout(() => {
-      setWeather({
-        temperature: 15,
-        condition: "дождь",
-        humidity: 80,
-        windSpeed: 10,
-        icon: "🌧️"
-      });
-    }, 1000);
-  }, []);
 
   const handleSignOut = async () => {
     await signOut();
@@ -68,7 +57,12 @@ const Index = () => {
 
         {/* Weather Card */}
         <div className="mb-8 animate-fade-in">
-          <WeatherCard weather={weather} />
+          <WeatherCard 
+            weather={weather} 
+            loading={weatherLoading} 
+            error={weatherError}
+            onRefresh={refetch}
+          />
         </div>
 
         {/* Outfit Recommendations */}
