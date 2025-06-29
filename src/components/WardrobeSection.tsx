@@ -11,28 +11,28 @@ import { useToast } from "@/hooks/use-toast";
 import { useWardrobe, WardrobeItem } from "@/hooks/useWardrobe";
 
 const categoryLabels = {
-  top: 'Верх',
-  bottom: 'Низ', 
-  shoes: 'Обувь',
-  outerwear: 'Верхняя одежда',
-  accessories: 'Аксессуары'
-};
+  'top': 'Верх',
+  'bottom': 'Низ', 
+  'shoes': 'Обувь',
+  'outerwear': 'Верхняя одежда',
+  'accessories': 'Аксессуары'
+} as const;
 
 const seasonLabels = {
-  spring: 'Весна',
-  summer: 'Лето',
-  autumn: 'Осень',
-  winter: 'Зима',
+  'spring': 'Весна',
+  'summer': 'Лето',
+  'autumn': 'Осень',
+  'winter': 'Зима',
   'all-season': 'Всесезон'
-};
+} as const;
 
 export const WardrobeSection = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newItem, setNewItem] = useState({
     name: "",
-    category: "" as WardrobeItem['category'],
+    category: "",
     color: "",
-    season: "" as WardrobeItem['season'],
+    season: "",
     brand: "",
     temperature_min: "",
     temperature_max: ""
@@ -66,9 +66,9 @@ export const WardrobeSection = () => {
     if (result.success) {
       setNewItem({ 
         name: "", 
-        category: "" as WardrobeItem['category'], 
+        category: "", 
         color: "", 
-        season: "" as WardrobeItem['season'], 
+        season: "", 
         brand: "",
         temperature_min: "",
         temperature_max: ""
@@ -103,6 +103,14 @@ export const WardrobeSection = () => {
         variant: "destructive"
       });
     }
+  };
+
+  const getCategoryLabel = (category: string) => {
+    return categoryLabels[category as keyof typeof categoryLabels] || category;
+  };
+
+  const getSeasonLabel = (season: string) => {
+    return seasonLabels[season as keyof typeof seasonLabels] || season;
   };
 
   if (loading) {
@@ -141,7 +149,7 @@ export const WardrobeSection = () => {
               </div>
               <div>
                 <Label htmlFor="category">Категория*</Label>
-                <Select onValueChange={(value) => setNewItem({...newItem, category: value as WardrobeItem['category']})}>
+                <Select onValueChange={(value) => setNewItem({...newItem, category: value})}>
                   <SelectTrigger>
                     <SelectValue placeholder="Выберите категорию" />
                   </SelectTrigger>
@@ -165,7 +173,7 @@ export const WardrobeSection = () => {
               </div>
               <div>
                 <Label htmlFor="season">Сезон*</Label>
-                <Select onValueChange={(value) => setNewItem({...newItem, season: value as WardrobeItem['season']})}>
+                <Select onValueChange={(value) => setNewItem({...newItem, season: value})}>
                   <SelectTrigger>
                     <SelectValue placeholder="Выберите сезон" />
                   </SelectTrigger>
@@ -237,13 +245,13 @@ export const WardrobeSection = () => {
                   )}
                   <div className="flex flex-wrap gap-1 mb-2">
                     <Badge variant="secondary" className="text-xs bg-white/20 text-white/80">
-                      {categoryLabels[item.category]}
+                      {getCategoryLabel(item.category)}
                     </Badge>
                     <Badge variant="secondary" className="text-xs bg-white/20 text-white/80">
                       {item.color}
                     </Badge>
                     <Badge variant="secondary" className="text-xs bg-white/20 text-white/80">
-                      {seasonLabels[item.season]}
+                      {getSeasonLabel(item.season)}
                     </Badge>
                   </div>
                   {(item.temperature_min || item.temperature_max) && (
