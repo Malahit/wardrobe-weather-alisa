@@ -9,7 +9,171 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      marketplace_recommendations: {
+        Row: {
+          category: string
+          created_at: string | null
+          external_url: string
+          id: string
+          image_url: string | null
+          item_name: string
+          marketplace: string
+          price: number | null
+          user_id: string
+          weather_reason: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          external_url: string
+          id?: string
+          image_url?: string | null
+          item_name: string
+          marketplace: string
+          price?: number | null
+          user_id: string
+          weather_reason?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          external_url?: string
+          id?: string
+          image_url?: string | null
+          item_name?: string
+          marketplace?: string
+          price?: number | null
+          user_id?: string
+          weather_reason?: string | null
+        }
+        Relationships: []
+      }
+      outfits: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          item_ids: string[]
+          last_used: string | null
+          name: string
+          rating: number | null
+          temperature: number | null
+          times_used: number | null
+          updated_at: string | null
+          user_id: string
+          weather_condition: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          item_ids: string[]
+          last_used?: string | null
+          name: string
+          rating?: number | null
+          temperature?: number | null
+          times_used?: number | null
+          updated_at?: string | null
+          user_id: string
+          weather_condition?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          item_ids?: string[]
+          last_used?: string | null
+          name?: string
+          rating?: number | null
+          temperature?: number | null
+          times_used?: number | null
+          updated_at?: string | null
+          user_id?: string
+          weather_condition?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      wardrobe_items: {
+        Row: {
+          brand: string | null
+          category: string
+          color: string
+          created_at: string | null
+          id: string
+          image_url: string | null
+          last_worn: string | null
+          name: string
+          season: string
+          temperature_max: number | null
+          temperature_min: number | null
+          times_worn: number | null
+          updated_at: string | null
+          user_id: string
+          weather_conditions: string[] | null
+        }
+        Insert: {
+          brand?: string | null
+          category: string
+          color: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          last_worn?: string | null
+          name: string
+          season: string
+          temperature_max?: number | null
+          temperature_min?: number | null
+          times_worn?: number | null
+          updated_at?: string | null
+          user_id: string
+          weather_conditions?: string[] | null
+        }
+        Update: {
+          brand?: string | null
+          category?: string
+          color?: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          last_worn?: string | null
+          name?: string
+          season?: string
+          temperature_max?: number | null
+          temperature_min?: number | null
+          times_worn?: number | null
+          updated_at?: string | null
+          user_id?: string
+          weather_conditions?: string[] | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

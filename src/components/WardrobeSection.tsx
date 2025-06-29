@@ -8,64 +8,112 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useWardrobe, WardrobeItem } from "@/hooks/useWardrobe";
 
-interface WardrobeItem {
-  id: number;
-  name: string;
-  category: string;
-  color: string;
-  season: string;
-  imageUrl?: string;
-}
+const categoryLabels = {
+  top: 'Верх',
+  bottom: 'Низ', 
+  shoes: 'Обувь',
+  outerwear: 'Верхняя одежда',
+  accessories: 'Аксессуары'
+};
 
-interface WardrobeSectionProps {
-  items: WardrobeItem[];
-  setItems: (items: WardrobeItem[]) => void;
-}
+const seasonLabels = {
+  spring: 'Весна',
+  summer: 'Лето',
+  autumn: 'Осень',
+  winter: 'Зима',
+  'all-season': 'Всесезон'
+};
 
-export const WardrobeSection = ({ items, setItems }: WardrobeSectionProps) => {
+export const WardrobeSection = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newItem, setNewItem] = useState({
     name: "",
-    category: "",
+    category: "" as WardrobeItem['category'],
     color: "",
-    season: ""
+    season: "" as WardrobeItem['season'],
+    brand: "",
+    temperature_min: "",
+    temperature_max: ""
   });
+  
   const { toast } = useToast();
+  const { items, loading, addItem, removeItem } = useWardrobe();
 
-  const handleAddItem = () => {
+  const handleAddItem = async () => {
     if (!newItem.name || !newItem.category || !newItem.color || !newItem.season) {
       toast({
         title: "Ошибка",
-        description: "Пожалуйста, заполните все поля",
+        description: "Пожалуйста, заполните все обязательные поля",
         variant: "destructive"
       });
       return;
     }
 
-    const item: WardrobeItem = {
-      id: Date.now(),
-      ...newItem,
-      imageUrl: `https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=200&h=200&fit=crop&crop=center`
+    const itemData = {
+      name: newItem.name,
+      category: newItem.category,
+      color: newItem.color,
+      season: newItem.season,
+      brand: newItem.brand || undefined,
+      temperature_min: newItem.temperature_min ? parseInt(newItem.temperature_min) : undefined,
+      temperature_max: newItem.temperature_max ? parseInt(newItem.temperature_max) : undefined,
     };
 
-    setItems([...items, item]);
-    setNewItem({ name: "", category: "", color: "", season: "" });
-    setIsAddModalOpen(false);
+    const result = await addItem(itemData);
     
-    toast({
-      title: "Успешно!",
-      description: "Вещь добавлена в гардероб"
-    });
+    if (result.success) {
+      setNewItem({ 
+        name: "", 
+        category: "" as WardrobeItem['category'], 
+        color: "", 
+        season: "" as WardrobeItem['season'], 
+        brand: "",
+        temperature_min: "",
+        temperature_max: ""
+      });
+      setIsAddModalOpen(false);
+      
+      toast({
+        title: "Успешно!",
+        description: "Вещь добавлена в гардероб"
+      });
+    } else {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось добавить вещь в гардероб",
+        variant: "destructive"
+      });
+    }
   };
 
-  const removeItem = (id: number) => {
-    setItems(items.filter(item => item.id !== id));
-    toast({
-      title: "Удалено",
-      description: "Вещь удалена из гардероба"
-    });
+  const handleRemoveItem = async (id: string) => {
+    const result = await removeItem(id);
+    
+    if (result.success) {
+      toast({
+        title: "Удалено",
+        description: "Вещь удалена из гардероба"
+      });
+    } else {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить вещь",
+        variant: "destructive"
+      });
+    }
   };
+
+  if (loading) {
+    return (
+      <Card className="p-6 bg-white/10 backdrop-blur-lg border-white/20">
+        <div className="text-center py-12 text-white/60">
+          <p className="text-lg">Загрузка гардероба...</p>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="p-6 bg-white/10 backdrop-blur-lg border-white/20">
@@ -83,7 +131,7 @@ export const WardrobeSection = ({ items, setItems }: WardrobeSectionProps) => {
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="name">Название</Label>
+                <Label htmlFor="name">Название*</Label>
                 <Input
                   id="name"
                   value={newItem.name}
@@ -92,8 +140,8 @@ export const WardrobeSection = ({ items, setItems }: WardrobeSectionProps) => {
                 />
               </div>
               <div>
-                <Label htmlFor="category">Категория</Label>
-                <Select onValueChange={(value) => setNewItem({...newItem, category: value})}>
+                <Label htmlFor="category">Категория*</Label>
+                <Select onValueChange={(value) => setNewItem({...newItem, category: value as WardrobeItem['category']})}>
                   <SelectTrigger>
                     <SelectValue placeholder="Выберите категорию" />
                   </SelectTrigger>
@@ -107,7 +155,7 @@ export const WardrobeSection = ({ items, setItems }: WardrobeSectionProps) => {
                 </Select>
               </div>
               <div>
-                <Label htmlFor="color">Цвет</Label>
+                <Label htmlFor="color">Цвет*</Label>
                 <Input
                   id="color"
                   value={newItem.color}
@@ -116,8 +164,8 @@ export const WardrobeSection = ({ items, setItems }: WardrobeSectionProps) => {
                 />
               </div>
               <div>
-                <Label htmlFor="season">Сезон</Label>
-                <Select onValueChange={(value) => setNewItem({...newItem, season: value})}>
+                <Label htmlFor="season">Сезон*</Label>
+                <Select onValueChange={(value) => setNewItem({...newItem, season: value as WardrobeItem['season']})}>
                   <SelectTrigger>
                     <SelectValue placeholder="Выберите сезон" />
                   </SelectTrigger>
@@ -129,6 +177,37 @@ export const WardrobeSection = ({ items, setItems }: WardrobeSectionProps) => {
                     <SelectItem value="all-season">Всесезон</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div>
+                <Label htmlFor="brand">Бренд</Label>
+                <Input
+                  id="brand"
+                  value={newItem.brand}
+                  onChange={(e) => setNewItem({...newItem, brand: e.target.value})}
+                  placeholder="Например: Zara"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="temp-min">Мин. температура (°C)</Label>
+                  <Input
+                    id="temp-min"
+                    type="number"
+                    value={newItem.temperature_min}
+                    onChange={(e) => setNewItem({...newItem, temperature_min: e.target.value})}
+                    placeholder="Например: -10"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="temp-max">Макс. температура (°C)</Label>
+                  <Input
+                    id="temp-max"
+                    type="number"
+                    value={newItem.temperature_max}
+                    onChange={(e) => setNewItem({...newItem, temperature_max: e.target.value})}
+                    placeholder="Например: 25"
+                  />
+                </div>
               </div>
               <Button onClick={handleAddItem} className="w-full">
                 Добавить в гардероб
@@ -153,21 +232,34 @@ export const WardrobeSection = ({ items, setItems }: WardrobeSectionProps) => {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-white">{item.name}</h3>
-                  <div className="flex flex-wrap gap-1 mt-2">
+                  {item.brand && (
+                    <p className="text-sm text-white/70 mb-2">{item.brand}</p>
+                  )}
+                  <div className="flex flex-wrap gap-1 mb-2">
                     <Badge variant="secondary" className="text-xs bg-white/20 text-white/80">
-                      {item.category}
+                      {categoryLabels[item.category]}
                     </Badge>
                     <Badge variant="secondary" className="text-xs bg-white/20 text-white/80">
                       {item.color}
                     </Badge>
                     <Badge variant="secondary" className="text-xs bg-white/20 text-white/80">
-                      {item.season}
+                      {seasonLabels[item.season]}
                     </Badge>
                   </div>
+                  {(item.temperature_min || item.temperature_max) && (
+                    <p className="text-xs text-white/60 mb-2">
+                      {item.temperature_min && item.temperature_max 
+                        ? `${item.temperature_min}°C - ${item.temperature_max}°C`
+                        : item.temperature_min 
+                        ? `от ${item.temperature_min}°C`
+                        : `до ${item.temperature_max}°C`
+                      }
+                    </p>
+                  )}
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => removeItem(item.id)}
+                    onClick={() => handleRemoveItem(item.id)}
                     className="mt-2 text-white/60 hover:text-white hover:bg-white/10"
                   >
                     Удалить
