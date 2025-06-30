@@ -8,20 +8,22 @@ interface WeatherData {
   description: string;
 }
 
-const WEATHER_API_KEY = "your_api_key_here"; // Пользователю нужно будет получить ключ
+const WEATHER_API_KEY = "088790d298bbc9d15357abd6cda175b5";
 
 export const getWeatherByCity = async (city: string = "Moscow"): Promise<WeatherData> => {
   try {
-    // Используем OpenWeatherMap API
+    console.log(`Запрос данных о погоде для города: ${city}`);
     const response = await fetch(
       `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${WEATHER_API_KEY}&units=metric&lang=ru`
     );
     
     if (!response.ok) {
+      console.error(`HTTP Error: ${response.status} - ${response.statusText}`);
       throw new Error('Не удалось получить данные о погоде');
     }
     
     const data = await response.json();
+    console.log('Данные о погоде получены:', data);
     
     return {
       temperature: Math.round(data.main.temp),
@@ -72,15 +74,19 @@ export const getWeatherByLocation = async (): Promise<WeatherData> => {
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
+          console.log(`Запрос данных о погоде по координатам: ${latitude}, ${longitude}`);
+          
           const response = await fetch(
             `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${WEATHER_API_KEY}&units=metric&lang=ru`
           );
           
           if (!response.ok) {
+            console.error(`HTTP Error: ${response.status} - ${response.statusText}`);
             throw new Error('Не удалось получить данные о погоде');
           }
           
           const data = await response.json();
+          console.log('Данные о погоде по геолокации получены:', data);
           
           resolve({
             temperature: Math.round(data.main.temp),
@@ -91,10 +97,12 @@ export const getWeatherByLocation = async (): Promise<WeatherData> => {
             description: data.weather[0].description
           });
         } catch (error) {
+          console.error('Ошибка получения погоды по геолокации:', error);
           reject(error);
         }
       },
       (error) => {
+        console.error('Ошибка получения геолокации:', error);
         reject(new Error('Не удалось получить местоположение'));
       }
     );
