@@ -104,13 +104,22 @@ export const useSavedOutfits = () => {
       
       // Обновляем статистику использования вещей
       for (const itemId of outfit.item_ids) {
-        await supabase
+        // Сначала получаем текущее значение times_worn
+        const { data: currentItem } = await supabase
           .from('wardrobe_items')
-          .update({
-            times_worn: supabase.sql`times_worn + 1`,
-            last_worn: new Date().toISOString().split('T')[0]
-          })
-          .eq('id', itemId);
+          .select('times_worn')
+          .eq('id', itemId)
+          .single();
+
+        if (currentItem) {
+          await supabase
+            .from('wardrobe_items')
+            .update({
+              times_worn: (currentItem.times_worn || 0) + 1,
+              last_worn: new Date().toISOString().split('T')[0]
+            })
+            .eq('id', itemId);
+        }
       }
       
       await fetchSavedOutfits();
