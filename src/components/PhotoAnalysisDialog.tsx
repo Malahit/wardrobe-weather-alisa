@@ -2,27 +2,25 @@
 import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Camera, Upload, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { Camera, Upload, Loader2, CheckCircle, AlertCircle, Edit3 } from "lucide-react";
 import { usePhotoAnalysis } from "@/hooks/usePhotoAnalysis";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { EditableAnalysisForm } from "./EditableAnalysisForm";
 
 export const PhotoAnalysisDialog = ({ onItemAdded }: { onItemAdded?: () => void }) => {
   const [open, setOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [customName, setCustomName] = useState("");
-  const [step, setStep] = useState<'upload' | 'analyze' | 'confirm'>('upload');
+  const [step, setStep] = useState<'upload' | 'analyze' | 'edit' | 'confirm'>('upload');
+  const [editedResult, setEditedResult] = useState<any>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { analyzing, result, analyzePhoto, addAnalyzedItemToWardrobe } = usePhotoAnalysis();
   const { toast } = useToast();
 
   const handleFileSelect = (file: File) => {
-    // Проверяем размер файла (максимум 10MB)
     if (file.size > 10 * 1024 * 1024) {
       toast({
         title: "Файл слишком большой",
@@ -32,7 +30,6 @@ export const PhotoAnalysisDialog = ({ onItemAdded }: { onItemAdded?: () => void 
       return;
     }
 
-    // Проверяем тип файла
     if (!file.type.startsWith('image/')) {
       toast({
         title: "Неверный тип файла",
@@ -58,32 +55,33 @@ export const PhotoAnalysisDialog = ({ onItemAdded }: { onItemAdded?: () => void 
     
     const analysisResult = await analyzePhoto(selectedImage);
     if (analysisResult) {
-      setStep('confirm');
+      setEditedResult(analysisResult);
+      setStep('edit');
     } else {
       toast({
         title: "Ошибка анализа",
-        description: "Не удалось проанализировать изображение, но вы можете добавить вещь вручную",
+        description: "Не удалось проанализировать изображение",
         variant: "destructive"
       });
     }
   };
 
   const handleConfirm = async () => {
-    if (!result || !selectedImage) return;
+    if (!editedResult || !selectedImage) return;
 
-    const addResult = await addAnalyzedItemToWardrobe(result, selectedImage, customName);
+    const addResult = await addAnalyzedItemToWardrobe(editedResult, selectedImage);
     
     if (addResult.success) {
       toast({
         title: "Успешно добавлено",
-        description: `${customName || result.name} добавлен в ваш гардероб`
+        description: `${editedResult.name} добавлен в ваш гардероб`
       });
       onItemAdded?.();
       handleClose();
     } else {
       toast({
         title: "Ошибка",
-        description: "Не удалось добавить вещь в гардероб. Попробуйте еще раз.",
+        description: "Не удалось добавить вещь в гардероб",
         variant: "destructive"
       });
     }
@@ -93,21 +91,9 @@ export const PhotoAnalysisDialog = ({ onItemAdded }: { onItemAdded?: () => void 
     setOpen(false);
     setSelectedImage(null);
     setPreviewUrl(null);
-    setCustomName("");
+    setEditedResult(null);
     setStep('upload');
     if (previewUrl) URL.revokeObjectURL(previewUrl);
-  };
-
-  const getCategoryLabel = (category: string) => {
-    const labels: { [key: string]: string } = {
-      'top': 'Верх',
-      'bottom': 'Низ', 
-      'shoes': 'Обувь',
-      'outerwear': 'Верхняя одежда',
-      'accessories': 'Аксессуары',
-      'other': 'Другое'
-    };
-    return labels[category] || category;
   };
 
   const getConfidenceColor = (confidence: number) => {
@@ -125,7 +111,7 @@ export const PhotoAnalysisDialog = ({ onItemAdded }: { onItemAdded?: () => void 
         </Button>
       </DialogTrigger>
       
-      <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-md">
+      <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <Camera className="w-5 h-5" />
@@ -216,64 +202,38 @@ export const PhotoAnalysisDialog = ({ onItemAdded }: { onItemAdded?: () => void 
           </div>
         )}
 
-        {step === 'confirm' && result && (
-          <div className="space-y-4">
-            {previewUrl && (
-              <img 
-                src={previewUrl} 
-                alt="Analyzed" 
-                className="w-full max-h-32 object-contain rounded-lg"
-              />
-            )}
+        {step === 'edit' && result && (
+          <div className="space-y-6">
+            <div className="flex items-center space-x-4">
+              {previewUrl && (
+                <img 
+                  src={previewUrl} 
+                  alt="Analyzed" 
+                  className="w-24 h-24 object-cover rounded-lg"
+                />
+              )}
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Edit3 className="w-4 h-4" />
+                  <span className="font-medium">Редактирование результата</span>
+                  <Badge variant="secondary" className={getConfidenceColor(result.confidence)}>
+                    {Math.round(result.confidence * 100)}% точность
+                  </Badge>
+                </div>
+                <p className="text-sm text-gray-400">
+                  Проверьте и отредактируйте данные перед добавлением в гардероб
+                </p>
+              </div>
+            </div>
             
-            <div className="bg-gray-800 p-4 rounded-lg space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-400">Результат анализа:</span>
-                <Badge variant="secondary" className={getConfidenceColor(result.confidence)}>
-                  {Math.round(result.confidence * 100)}% точность
-                </Badge>
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Название:</span>
-                  <span className="text-white">{result.name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Категория:</span>
-                  <span className="text-white">{getCategoryLabel(result.category)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Цвет:</span>
-                  <span className="text-white">{result.color}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Сезон:</span>
-                  <span className="text-white">{result.season}</span>
-                </div>
-                {result.brand && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Бренд:</span>
-                    <span className="text-white">{result.brand}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="custom-name">Название (можно изменить)</Label>
-              <Input
-                id="custom-name"
-                value={customName}
-                onChange={(e) => setCustomName(e.target.value)}
-                placeholder={result.name}
-                className="bg-gray-800 border-gray-600 text-white"
-              />
-            </div>
+            <EditableAnalysisForm
+              initialData={result}
+              onChange={setEditedResult}
+            />
 
             <div className="flex space-x-2">
               <Button
-                onClick={() => setStep('upload')}
+                onClick={() => setStep('analyze')}
                 variant="outline"
                 className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700"
               >

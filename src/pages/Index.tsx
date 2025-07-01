@@ -1,20 +1,21 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { WeatherCard } from "@/components/WeatherCard";
+import { EnhancedWeatherCard } from "@/components/EnhancedWeatherCard";
 import { WardrobeSection } from "@/components/WardrobeSection";
 import { OutfitRecommendations } from "@/components/OutfitRecommendations";
 import { SavedOutfitsSection } from "@/components/SavedOutfitsSection";
 import { WardrobeStatistics } from "@/components/WardrobeStatistics";
 import { MarketplaceRecommendations } from "@/components/MarketplaceRecommendations";
-import { VoiceAssistant } from "@/components/VoiceAssistant";
+import { PersonalStylist } from "@/components/PersonalStylist";
+import { YandexAliceIntegration } from "@/components/YandexAliceIntegration";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useWardrobe } from "@/hooks/useWardrobe";
 import { useWeather } from "@/hooks/useWeather";
 import { OutfitSuggestion } from "@/services/outfitService";
-import { Shirt, Heart, BarChart3, ShoppingBag, LogOut } from "lucide-react";
+import { Shirt, Heart, BarChart3, ShoppingBag, User, Mic, LogOut } from "lucide-react";
 
 const Index = () => {
   const [currentOutfit, setCurrentOutfit] = useState<OutfitSuggestion | null>(null);
@@ -66,14 +67,9 @@ const Index = () => {
           )}
         </header>
 
-        {/* Voice Assistant */}
-        <div className="mb-8 animate-fade-in">
-          <VoiceAssistant />
-        </div>
-
         {/* Weather Card */}
         <div className="mb-8 animate-fade-in">
-          <WeatherCard 
+          <EnhancedWeatherCard 
             weather={weather} 
             loading={weatherLoading} 
             error={weatherError}
@@ -84,20 +80,27 @@ const Index = () => {
         {/* Main Content Tabs */}
         <div className="animate-fade-in">
           <Tabs defaultValue="recommendations" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 bg-white/10 backdrop-blur-lg border-white/20">
+            <TabsList className="grid w-full grid-cols-5 bg-white/10 backdrop-blur-lg border-white/20">
               <TabsTrigger 
                 value="recommendations" 
                 className="flex items-center space-x-2 data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70"
               >
                 <Shirt className="w-4 h-4" />
-                <span className="hidden sm:inline">Рекомендации</span>
+                <span className="hidden sm:inline">Образы</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="stylist" 
+                className="flex items-center space-x-2 data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70"
+              >
+                <User className="w-4 h-4" />
+                <span className="hidden sm:inline">Стилист</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="saved" 
                 className="flex items-center space-x-2 data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70"
               >
                 <Heart className="w-4 h-4" />
-                <span className="hidden sm:inline">Сохраненные</span>
+                <span className="hidden sm:inline">Сохранённые</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="statistics" 
@@ -107,11 +110,11 @@ const Index = () => {
                 <span className="hidden sm:inline">Статистика</span>
               </TabsTrigger>
               <TabsTrigger 
-                value="shopping" 
+                value="assistant" 
                 className="flex items-center space-x-2 data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70"
               >
-                <ShoppingBag className="w-4 h-4" />
-                <span className="hidden sm:inline">Магазины</span>
+                <Mic className="w-4 h-4" />
+                <span className="hidden sm:inline">Помощник</span>
               </TabsTrigger>
             </TabsList>
             
@@ -125,6 +128,17 @@ const Index = () => {
               <WardrobeSection />
             </TabsContent>
             
+            <TabsContent value="stylist" className="space-y-8 mt-6">
+              <PersonalStylist 
+                wardrobeItems={wardrobeItems}
+                weather={weather}
+              />
+              <MarketplaceRecommendations 
+                weather={weather}
+                wardrobeItems={wardrobeItems}
+              />
+            </TabsContent>
+            
             <TabsContent value="saved" className="mt-6">
               <SavedOutfitsSection />
             </TabsContent>
@@ -133,11 +147,8 @@ const Index = () => {
               <WardrobeStatistics />
             </TabsContent>
             
-            <TabsContent value="shopping" className="mt-6">
-              <MarketplaceRecommendations 
-                weather={weather}
-                wardrobeItems={wardrobeItems}
-              />
+            <TabsContent value="assistant" className="mt-6">
+              <YandexAliceIntegration />
             </TabsContent>
           </Tabs>
         </div>
