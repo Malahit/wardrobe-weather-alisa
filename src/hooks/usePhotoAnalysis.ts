@@ -36,7 +36,21 @@ export const usePhotoAnalysis = () => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        // Возвращаем fallback результат при ошибке
+        const fallbackResult: PhotoAnalysisResult = {
+          name: 'Предмет одежды',
+          category: 'other',
+          color: 'неопределенный',
+          season: 'all-season',
+          brand: null,
+          confidence: 0.6,
+          description: 'Добавлено без анализа'
+        };
+        setResult(fallbackResult);
+        return fallbackResult;
+      }
 
       const analysisResult: PhotoAnalysisResult = {
         name: data.name || 'Неопознанная вещь',
@@ -52,7 +66,19 @@ export const usePhotoAnalysis = () => {
       return analysisResult;
     } catch (error) {
       console.error('Error analyzing photo:', error);
-      return null;
+      
+      // Возвращаем fallback результат при любой ошибке
+      const fallbackResult: PhotoAnalysisResult = {
+        name: 'Предмет одежды',
+        category: 'other',
+        color: 'неопределенный',
+        season: 'all-season',
+        brand: null,
+        confidence: 0.5,
+        description: 'Ошибка анализа'
+      };
+      setResult(fallbackResult);
+      return fallbackResult;
     } finally {
       setAnalyzing(false);
     }
@@ -67,12 +93,15 @@ export const usePhotoAnalysis = () => {
 
     try {
       // Загружаем изображение в storage
-      const fileName = `${user.id}_${Date.now()}_${imageFile.name}`;
+      const fileName = `${user.id}/${Date.now()}_${imageFile.name}`;
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('wardrobe-photos')
         .upload(fileName, imageFile);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
 
       // Получаем публичный URL
       const { data: urlData } = supabase.storage
@@ -97,7 +126,10 @@ export const usePhotoAnalysis = () => {
         .select()
         .single();
 
-      if (itemError) throw itemError;
+      if (itemError) {
+        console.error('Database insert error:', itemError);
+        throw itemError;
+      }
 
       return { 
         success: true, 

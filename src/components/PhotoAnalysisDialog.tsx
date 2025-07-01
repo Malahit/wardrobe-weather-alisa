@@ -4,10 +4,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Camera, Upload, Loader2, CheckCircle } from "lucide-react";
+import { Camera, Upload, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { usePhotoAnalysis } from "@/hooks/usePhotoAnalysis";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export const PhotoAnalysisDialog = ({ onItemAdded }: { onItemAdded?: () => void }) => {
   const [open, setOpen] = useState(false);
@@ -21,6 +22,26 @@ export const PhotoAnalysisDialog = ({ onItemAdded }: { onItemAdded?: () => void 
   const { toast } = useToast();
 
   const handleFileSelect = (file: File) => {
+    // Проверяем размер файла (максимум 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: "Файл слишком большой",
+        description: "Максимальный размер файла 10MB",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Проверяем тип файла
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Неверный тип файла",
+        description: "Пожалуйста, выберите изображение",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setSelectedImage(file);
     const url = URL.createObjectURL(file);
     setPreviewUrl(url);
@@ -41,7 +62,7 @@ export const PhotoAnalysisDialog = ({ onItemAdded }: { onItemAdded?: () => void 
     } else {
       toast({
         title: "Ошибка анализа",
-        description: "Не удалось проанализировать изображение",
+        description: "Не удалось проанализировать изображение, но вы можете добавить вещь вручную",
         variant: "destructive"
       });
     }
@@ -62,7 +83,7 @@ export const PhotoAnalysisDialog = ({ onItemAdded }: { onItemAdded?: () => void 
     } else {
       toast({
         title: "Ошибка",
-        description: "Не удалось добавить вещь в гардероб",
+        description: "Не удалось добавить вещь в гардероб. Попробуйте еще раз.",
         variant: "destructive"
       });
     }
@@ -83,9 +104,16 @@ export const PhotoAnalysisDialog = ({ onItemAdded }: { onItemAdded?: () => void 
       'bottom': 'Низ', 
       'shoes': 'Обувь',
       'outerwear': 'Верхняя одежда',
-      'accessories': 'Аксессуары'
+      'accessories': 'Аксессуары',
+      'other': 'Другое'
     };
     return labels[category] || category;
+  };
+
+  const getConfidenceColor = (confidence: number) => {
+    if (confidence >= 0.8) return "bg-green-600/20 text-green-300";
+    if (confidence >= 0.6) return "bg-yellow-600/20 text-yellow-300";
+    return "bg-red-600/20 text-red-300";
   };
 
   return (
@@ -108,7 +136,10 @@ export const PhotoAnalysisDialog = ({ onItemAdded }: { onItemAdded?: () => void 
         {step === 'upload' && (
           <div className="space-y-4">
             <div className="text-center">
-              <div className="border-2 border-dashed border-gray-600 rounded-lg p-8 hover:border-gray-500 transition-colors">
+              <div 
+                className="border-2 border-dashed border-gray-600 rounded-lg p-8 hover:border-gray-500 transition-colors cursor-pointer"
+                onClick={() => fileInputRef.current?.click()}
+              >
                 {previewUrl ? (
                   <img 
                     src={previewUrl} 
@@ -155,12 +186,19 @@ export const PhotoAnalysisDialog = ({ onItemAdded }: { onItemAdded?: () => void 
               />
             )}
             
+            <Alert className="bg-blue-600/20 border-blue-600/50">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="text-blue-300">
+                ИИ проанализирует ваше фото и определит тип одежды, цвет и сезон
+              </AlertDescription>
+            </Alert>
+            
             <div className="text-center space-y-4">
               <p className="text-gray-300">Готово к анализу!</p>
               <Button
                 onClick={handleAnalyze}
                 disabled={analyzing}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-blue-600 hover:bg-blue-700 w-full"
               >
                 {analyzing ? (
                   <>
@@ -170,7 +208,7 @@ export const PhotoAnalysisDialog = ({ onItemAdded }: { onItemAdded?: () => void 
                 ) : (
                   <>
                     <CheckCircle className="w-4 h-4 mr-2" />
-                    Анализировать
+                    Анализировать фото
                   </>
                 )}
               </Button>
@@ -190,8 +228,8 @@ export const PhotoAnalysisDialog = ({ onItemAdded }: { onItemAdded?: () => void 
             
             <div className="bg-gray-800 p-4 rounded-lg space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-400">Распознано:</span>
-                <Badge variant="secondary" className="bg-green-600/20 text-green-300">
+                <span className="text-sm text-gray-400">Результат анализа:</span>
+                <Badge variant="secondary" className={getConfidenceColor(result.confidence)}>
                   {Math.round(result.confidence * 100)}% точность
                 </Badge>
               </div>

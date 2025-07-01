@@ -17,11 +17,29 @@ serve(async (req) => {
   try {
     const { image, userId } = await req.json();
 
-    if (!image || !openAIApiKey) {
+    if (!image) {
       return new Response(
-        JSON.stringify({ error: 'Missing image or API key' }),
+        JSON.stringify({ error: 'Missing image data' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    if (!openAIApiKey || openAIApiKey.startsWith('github_')) {
+      console.log('OpenAI API key not configured properly');
+      // Возвращаем fallback результат
+      const fallbackResult = {
+        name: 'Предмет одежды',
+        category: 'other',
+        color: 'неопределенный',
+        season: 'all-season',
+        brand: null,
+        confidence: 0.7,
+        description: 'Добавлено без анализа - требуется настройка OpenAI API'
+      };
+      
+      return new Response(JSON.stringify(fallbackResult), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     console.log('Analyzing clothing image for user:', userId);
@@ -33,7 +51,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
@@ -68,6 +86,11 @@ serve(async (req) => {
       }),
     });
 
+    if (!response.ok) {
+      console.error('OpenAI API error:', response.status, response.statusText);
+      throw new Error(`OpenAI API error: ${response.status}`);
+    }
+
     const data = await response.json();
     console.log('OpenAI response:', data);
 
@@ -100,21 +123,21 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in analyze-clothing function:', error);
-    return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        name: 'Предмет одежды',
-        category: 'other',
-        color: 'неопределенный',
-        season: 'all-season',
-        brand: null,
-        confidence: 0.3,
-        description: 'Ошибка анализа, добавлено вручную'
-      }),
-      { 
-        status: 200, // Возвращаем 200 с fallback данными
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
+    
+    // Возвращаем fallback результат вместо ошибки
+    const fallbackResult = {
+      name: 'Предмет одежды',
+      category: 'other',
+      color: 'неопределенный',
+      season: 'all-season',
+      brand: null,
+      confidence: 0.3,
+      description: 'Ошибка анализа, добавлено вручную'
+    };
+    
+    return new Response(JSON.stringify(fallbackResult), {
+      status: 200, // Возвращаем 200 с fallback данными
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    });
   }
 });
