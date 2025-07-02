@@ -9,13 +9,14 @@ import { WardrobeStatistics } from "@/components/WardrobeStatistics";
 import { MarketplaceRecommendations } from "@/components/MarketplaceRecommendations";
 import { PersonalStylist } from "@/components/PersonalStylist";
 import { YandexAliceIntegration } from "@/components/YandexAliceIntegration";
+import { StyleRecommendations } from "@/components/StyleRecommendations";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useWardrobe } from "@/hooks/useWardrobe";
 import { useWeather } from "@/hooks/useWeather";
 import { OutfitSuggestion } from "@/services/outfitService";
-import { Shirt, Heart, BarChart3, ShoppingBag, User, Mic, LogOut } from "lucide-react";
+import { Shirt, Heart, BarChart3, ShoppingBag, User, Mic, Palette, LogOut } from "lucide-react";
 
 const Index = () => {
   const [currentOutfit, setCurrentOutfit] = useState<OutfitSuggestion | null>(null);
@@ -80,13 +81,20 @@ const Index = () => {
         {/* Main Content Tabs */}
         <div className="animate-fade-in">
           <Tabs defaultValue="recommendations" className="w-full">
-            <TabsList className="grid w-full grid-cols-5 bg-white/10 backdrop-blur-lg border-white/20">
+            <TabsList className="grid w-full grid-cols-6 bg-white/10 backdrop-blur-lg border-white/20">
               <TabsTrigger 
                 value="recommendations" 
                 className="flex items-center space-x-2 data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70"
               >
                 <Shirt className="w-4 h-4" />
                 <span className="hidden sm:inline">Образы</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="styles" 
+                className="flex items-center space-x-2 data-[state=active]:bg-white/20 data-[state=active]:text-white text-white/70"
+              >
+                <Palette className="w-4 h-4" />
+                <span className="hidden sm:inline">Стили</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="stylist" 
@@ -126,6 +134,10 @@ const Index = () => {
                 setCurrentOutfit={setCurrentOutfit}
               />
               <WardrobeSection />
+            </TabsContent>
+            
+            <TabsContent value="styles" className="mt-6">
+              <StyleRecommendations />
             </TabsContent>
             
             <TabsContent value="stylist" className="space-y-8 mt-6">
