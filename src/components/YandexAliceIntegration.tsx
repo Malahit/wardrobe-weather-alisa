@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,8 +19,10 @@ export const YandexAliceIntegration = () => {
 
   useEffect(() => {
     // Инициализация Web Speech API
-    if ('webkitSpeechRecognition' in window) {
-      const speechRecognition = new (window as any).webkitSpeechRecognition();
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (SpeechRecognition) {
+      const speechRecognition = new SpeechRecognition();
       speechRecognition.continuous = false;
       speechRecognition.interimResults = false;
       speechRecognition.lang = 'ru-RU';
@@ -34,12 +35,12 @@ export const YandexAliceIntegration = () => {
         setIsListening(false);
       };
 
-      speechRecognition.onresult = (event: any) => {
+      speechRecognition.onresult = (event: SpeechRecognitionEvent) => {
         const transcript = event.results[0][0].transcript;
         handleUserMessage(transcript);
       };
 
-      speechRecognition.onerror = (event: any) => {
+      speechRecognition.onerror = (event: SpeechRecognitionErrorEvent) => {
         console.error('Speech recognition error:', event.error);
         setIsListening(false);
       };
