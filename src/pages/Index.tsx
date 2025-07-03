@@ -7,7 +7,8 @@ import { SavedOutfitsSection } from "@/components/SavedOutfitsSection";
 import { WardrobeStatistics } from "@/components/WardrobeStatistics";
 import { MarketplaceRecommendations } from "@/components/MarketplaceRecommendations";
 import { SmartOutfitAssistant } from "@/components/SmartOutfitAssistant";
-import { DynamicOutfitGallery } from "@/components/DynamicOutfitGallery";
+import { EnhancedOutfitGallery } from "@/components/EnhancedOutfitGallery";
+import { ShoppingSection } from "@/components/ShoppingSection";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
@@ -89,7 +90,7 @@ const Index = () => {
         {/* Main Content Tabs */}
         <div className="animate-fade-in">
           <Tabs defaultValue="assistant" className="w-full">
-            <TabsList className="grid w-full grid-cols-5 bg-white/10 backdrop-blur-lg border-white/20 rounded-2xl p-2">
+            <TabsList className="grid w-full grid-cols-6 bg-white/10 backdrop-blur-lg border-white/20 rounded-2xl p-2">
               <TabsTrigger 
                 value="assistant" 
                 className="flex items-center space-x-2 data-[state=active]:bg-white/30 data-[state=active]:text-white text-white/70 rounded-xl py-3 font-medium"
@@ -103,6 +104,13 @@ const Index = () => {
               >
                 <Image className="w-4 h-4" />
                 <span className="hidden sm:inline">Галерея</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="shopping" 
+                className="flex items-center space-x-2 data-[state=active]:bg-white/30 data-[state=active]:text-white text-white/70 rounded-xl py-3 font-medium"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                <span className="hidden sm:inline">Магазин</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="wardrobe" 
@@ -137,7 +145,11 @@ const Index = () => {
             </TabsContent>
             
             <TabsContent value="gallery" className="mt-8">
-              <DynamicOutfitGallery weather={weather} />
+              <EnhancedOutfitGallery weather={weather} />
+            </TabsContent>
+            
+            <TabsContent value="shopping" className="mt-8">
+              <ShoppingSection />
             </TabsContent>
             
             <TabsContent value="wardrobe" className="space-y-8 mt-8">

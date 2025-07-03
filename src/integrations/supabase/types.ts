@@ -48,6 +48,71 @@ export type Database = {
         }
         Relationships: []
       }
+      outfit_items: {
+        Row: {
+          brand: string | null
+          color: string | null
+          created_at: string
+          currency: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          is_available: boolean | null
+          item_name: string
+          item_type: string
+          material: string | null
+          outfit_template_id: string | null
+          price: number | null
+          shop_url: string | null
+          size_range: string | null
+          updated_at: string
+        }
+        Insert: {
+          brand?: string | null
+          color?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean | null
+          item_name: string
+          item_type: string
+          material?: string | null
+          outfit_template_id?: string | null
+          price?: number | null
+          shop_url?: string | null
+          size_range?: string | null
+          updated_at?: string
+        }
+        Update: {
+          brand?: string | null
+          color?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean | null
+          item_name?: string
+          item_type?: string
+          material?: string | null
+          outfit_template_id?: string | null
+          price?: number | null
+          shop_url?: string | null
+          size_range?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outfit_items_outfit_template_id_fkey"
+            columns: ["outfit_template_id"]
+            isOneToOne: false
+            referencedRelation: "outfit_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       outfit_templates: {
         Row: {
           clothing_items: string[]
