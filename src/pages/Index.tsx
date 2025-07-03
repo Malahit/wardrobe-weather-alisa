@@ -137,7 +137,7 @@ const Index = () => {
             </TabsContent>
             
             <TabsContent value="gallery" className="mt-8">
-              <DynamicOutfitGallery />
+              <DynamicOutfitGallery weather={weather} />
             </TabsContent>
             
             <TabsContent value="wardrobe" className="space-y-8 mt-8">

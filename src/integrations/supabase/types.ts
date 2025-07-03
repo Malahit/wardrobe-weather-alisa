@@ -48,6 +48,69 @@ export type Database = {
         }
         Relationships: []
       }
+      outfit_templates: {
+        Row: {
+          clothing_items: string[]
+          color_palette: string[]
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          image_url: string
+          is_approved: boolean | null
+          name: string
+          occasion: string | null
+          season: string
+          source_url: string | null
+          style_category: string
+          style_tips: string | null
+          temperature_max: number | null
+          temperature_min: number | null
+          updated_at: string
+          weather_conditions: string[]
+        }
+        Insert: {
+          clothing_items?: string[]
+          color_palette?: string[]
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url: string
+          is_approved?: boolean | null
+          name: string
+          occasion?: string | null
+          season: string
+          source_url?: string | null
+          style_category: string
+          style_tips?: string | null
+          temperature_max?: number | null
+          temperature_min?: number | null
+          updated_at?: string
+          weather_conditions?: string[]
+        }
+        Update: {
+          clothing_items?: string[]
+          color_palette?: string[]
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string
+          is_approved?: boolean | null
+          name?: string
+          occasion?: string | null
+          season?: string
+          source_url?: string | null
+          style_category?: string
+          style_tips?: string | null
+          temperature_max?: number | null
+          temperature_min?: number | null
+          updated_at?: string
+          weather_conditions?: string[]
+        }
+        Relationships: []
+      }
       outfits: {
         Row: {
           created_at: string | null
@@ -119,6 +182,47 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      stylist_training_data: {
+        Row: {
+          created_at: string
+          id: string
+          outfit_template_id: string | null
+          personal_preferences: Json | null
+          rating: number | null
+          user_feedback: string | null
+          user_id: string
+          weather_context: Json | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          outfit_template_id?: string | null
+          personal_preferences?: Json | null
+          rating?: number | null
+          user_feedback?: string | null
+          user_id: string
+          weather_context?: Json | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          outfit_template_id?: string | null
+          personal_preferences?: Json | null
+          rating?: number | null
+          user_feedback?: string | null
+          user_id?: string
+          weather_context?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stylist_training_data_outfit_template_id_fkey"
+            columns: ["outfit_template_id"]
+            isOneToOne: false
+            referencedRelation: "outfit_templates"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wardrobe_items: {
         Row: {
