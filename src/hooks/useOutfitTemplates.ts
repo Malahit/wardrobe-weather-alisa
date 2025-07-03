@@ -96,9 +96,17 @@ export const useOutfitTemplates = () => {
 
   const submitTrainingData = async (templateId: string, feedback: string, rating: number, weatherContext: any) => {
     try {
+      // Получаем текущего пользователя
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('Пользователь не авторизован');
+      }
+
       const { error } = await supabase
         .from('stylist_training_data')
         .insert([{
+          user_id: user.id, // Добавляем обязательное поле user_id
           outfit_template_id: templateId,
           user_feedback: feedback,
           rating,
