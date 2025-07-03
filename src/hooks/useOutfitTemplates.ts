@@ -105,13 +105,13 @@ export const useOutfitTemplates = () => {
 
       const { error } = await supabase
         .from('stylist_training_data')
-        .insert([{
-          user_id: user.id, // Добавляем обязательное поле user_id
+        .insert({
+          user_id: user.id,
           outfit_template_id: templateId,
           user_feedback: feedback,
           rating,
           weather_context: weatherContext,
-        }]);
+        });
 
       if (error) throw error;
 
