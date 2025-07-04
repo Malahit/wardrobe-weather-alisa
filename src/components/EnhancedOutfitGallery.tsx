@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useOutfitTemplates } from "@/hooks/useOutfitTemplates";
 import { useOutfitItems } from "@/hooks/useOutfitItems";
-import { Heart, ShoppingBag, Star, Thermometer, Cloud, Sun, RefreshCw } from "lucide-react";
+import { Heart, ShoppingBag, Star, Thermometer, Cloud, Sun, RefreshCw, Shuffle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface EnhancedOutfitGalleryProps {
@@ -17,15 +16,26 @@ export const EnhancedOutfitGallery = ({ weather }: EnhancedOutfitGalleryProps) =
   const { getItemsByTemplate } = useOutfitItems();
   const { toast } = useToast();
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<number>(Date.now());
 
-  // Автоматическое обновление образов каждые 30 секунд
+  // Автоматическое обновление образов каждые 2 минуты с рандомизацией
   useEffect(() => {
     const interval = setInterval(() => {
-      fetchTemplates(weather);
-    }, 30000);
+      console.log('Auto-refreshing outfits...');
+      fetchTemplates(weather, false);
+      setLastRefresh(Date.now());
+    }, 120000); // 2 минуты
 
     return () => clearInterval(interval);
   }, [weather]);
+
+  // Обновление при изменении погоды
+  useEffect(() => {
+    if (weather) {
+      console.log('Weather changed, fetching new outfits...');
+      fetchTemplates(weather, false);
+    }
+  }, [weather?.condition, weather?.temperature]);
 
   const handleLikeOutfit = async (templateId: string, rating: number) => {
     try {
@@ -37,6 +47,12 @@ export const EnhancedOutfitGallery = ({ weather }: EnhancedOutfitGalleryProps) =
     } catch (error) {
       console.error('Error submitting feedback:', error);
     }
+  };
+
+  const handleRefreshOutfits = () => {
+    console.log('Manual refresh triggered');
+    fetchTemplates(weather, true);
+    setLastRefresh(Date.now());
   };
 
   const getWeatherIcon = (conditions: string[]) => {
@@ -76,6 +92,7 @@ export const EnhancedOutfitGallery = ({ weather }: EnhancedOutfitGalleryProps) =
           <div className="animate-pulse">
             <RefreshCw className="w-16 h-16 mx-auto mb-4 text-white/20 animate-spin" />
             <p className="text-lg">Подбираем стильные образы...</p>
+            <p className="text-sm mt-2">Учитываем погоду и ваши предпочтения</p>
           </div>
         </div>
       </Card>
@@ -88,18 +105,22 @@ export const EnhancedOutfitGallery = ({ weather }: EnhancedOutfitGalleryProps) =
         <div className="flex items-center space-x-2">
           <span className="text-2xl">✨</span>
           <h2 className="text-2xl font-bold text-white">Галерея образов</h2>
+          <Shuffle className="w-5 h-5 text-white/60" />
         </div>
         <div className="flex items-center space-x-4">
           <Badge variant="secondary" className="bg-white/20 text-white/80">
             {templates.length} образов
           </Badge>
+          <div className="text-xs text-white/60">
+            Обновлено: {new Date(lastRefresh).toLocaleTimeString()}
+          </div>
           <Button
-            onClick={() => fetchTemplates(weather)}
+            onClick={handleRefreshOutfits}
             className="bg-white/20 hover:bg-white/30 text-white border-white/30"
             size="sm"
           >
             <RefreshCw className="w-4 h-4 mr-2" />
-            Обновить
+            Новые образы
           </Button>
         </div>
       </div>
@@ -115,7 +136,11 @@ export const EnhancedOutfitGallery = ({ weather }: EnhancedOutfitGalleryProps) =
               {getWeatherIcon([weather.condition])}
               <span className="capitalize">{weather.condition}</span>
             </div>
-            <span className="text-sm">Образы подобраны под текущую погоду</span>
+            <span className="text-sm">Образы подобраны автоматически</span>
+            <div className="flex items-center space-x-1 text-xs">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <span>Live</span>
+            </div>
           </div>
         </div>
       )}
@@ -130,19 +155,23 @@ export const EnhancedOutfitGallery = ({ weather }: EnhancedOutfitGalleryProps) =
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {templates.map((template) => {
+          {templates.map((template, index) => {
             const items = getItemsByTemplate(template.id);
             
             return (
               <Card 
-                key={template.id} 
-                className={`p-4 transition-all hover:shadow-xl hover:scale-105 ${
+                key={`${template.id}-${lastRefresh}-${index}`} // Уникальный ключ для принудительного обновления
+                className={`p-4 transition-all duration-500 hover:shadow-xl hover:scale-105 ${
                   selectedTemplate === template.id 
                     ? 'ring-2 ring-pink-400 bg-pink-50/20' 
                     : 'bg-white/10 border-white/20 hover:bg-white/15'
-                }`}
+                } animate-fade-in`}
+                style={{
+                  animationDelay: `${index * 100}ms` // Эффект появления по очереди
+                }}
                 onClick={() => setSelectedTemplate(selectedTemplate === template.id ? null : template.id)}
               >
+                
                 <div className="relative mb-4">
                   <img
                     src={template.image_url}
@@ -179,8 +208,8 @@ export const EnhancedOutfitGallery = ({ weather }: EnhancedOutfitGalleryProps) =
 
                   {/* Погодные условия */}
                   <div className="flex flex-wrap gap-1">
-                    {template.weather_conditions.map((condition, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs bg-blue-500/20 text-blue-200">
+                    {template.weather_conditions.map((condition, idx) => (
+                      <Badge key={idx} variant="secondary" className="text-xs bg-blue-500/20 text-blue-200">
                         {getWeatherIcon([condition])} {condition}
                       </Badge>
                     ))}
@@ -190,9 +219,9 @@ export const EnhancedOutfitGallery = ({ weather }: EnhancedOutfitGalleryProps) =
                   <div className="flex items-center space-x-2">
                     <span className="text-white/60 text-sm">Цвета:</span>
                     <div className="flex space-x-1">
-                      {template.color_palette.slice(0, 4).map((color, index) => (
+                      {template.color_palette.slice(0, 4).map((color, idx) => (
                         <div
-                          key={index}
+                          key={idx}
                           className="w-4 h-4 rounded-full border border-white/30"
                           style={{ backgroundColor: color === 'navy' ? '#000080' : color === 'burgundy' ? '#800020' : color }}
                           title={color}
@@ -205,8 +234,8 @@ export const EnhancedOutfitGallery = ({ weather }: EnhancedOutfitGalleryProps) =
                   <div className="space-y-2">
                     <span className="text-white/60 text-sm">Состав образа:</span>
                     <div className="flex flex-wrap gap-1">
-                      {template.clothing_items.slice(0, 3).map((item, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs bg-green-500/20 text-green-200">
+                      {template.clothing_items.slice(0, 3).map((item, idx) => (
+                        <Badge key={idx} variant="secondary" className="text-xs bg-green-500/20 text-green-200">
                           {item}
                         </Badge>
                       ))}

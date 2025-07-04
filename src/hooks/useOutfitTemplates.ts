@@ -29,32 +29,32 @@ export const useOutfitTemplates = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const fetchTemplates = async (weather?: any) => {
+  const fetchTemplates = async (weather?: any, forceRefresh = false) => {
     setLoading(true);
     try {
-      let query = supabase
-        .from('outfit_templates')
-        .select('*')
-        .eq('is_approved', true);
+      console.log('Fetching outfit templates with weather:', weather);
+      
+      // Используем новую функцию для случайной выборки образов
+      const { data, error } = await supabase.rpc('get_random_outfit_templates', {
+        weather_condition: weather?.condition || null,
+        temperature: weather?.temperature || null,
+        limit_count: 12
+      });
 
-      // Фильтрация по погоде если передана
-      if (weather) {
-        const temp = weather.temperature;
-        const condition = mapWeatherCondition(weather.condition);
-        
-        query = query
-          .or(`temperature_min.is.null,temperature_min.lte.${temp}`)
-          .or(`temperature_max.is.null,temperature_max.gte.${temp}`);
-          
-        if (condition) {
-          query = query.contains('weather_conditions', [condition]);
-        }
+      if (error) {
+        console.error('Error fetching templates:', error);
+        throw error;
       }
 
-      const { data, error } = await query.order('created_at', { ascending: false });
-
-      if (error) throw error;
+      console.log('Fetched templates:', data?.length);
       setTemplates(data || []);
+      
+      if (forceRefresh && data?.length) {
+        toast({
+          title: "Образы обновлены!",
+          description: `Загружено ${data.length} новых образов под текущую погоду`,
+        });
+      }
     } catch (error) {
       console.error('Error fetching outfit templates:', error);
       toast({
@@ -67,68 +67,35 @@ export const useOutfitTemplates = () => {
     }
   };
 
-  const addTemplate = async (template: Omit<OutfitTemplate, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => {
+  const submitTrainingData = async (
+    templateId: string,
+    feedback: string,
+    rating: number,
+    weather?: any
+  ) => {
     try {
-      const { data, error } = await supabase
-        .from('outfit_templates')
-        .insert([template])
-        .select()
-        .single();
+      const { error } = await supabase
+        .from('stylist_training_data')
+        .insert({
+          outfit_template_id: templateId,
+          user_feedback: feedback,
+          rating,
+          weather_context: weather ? {
+            temperature: weather.temperature,
+            condition: weather.condition,
+            humidity: weather.humidity
+          } : null,
+          user_id: (await supabase.auth.getUser()).data.user?.id
+        });
 
       if (error) throw error;
-
-      toast({
-        title: "Успешно!",
-        description: "Образ добавлен для модерации",
-      });
-
-      return data;
     } catch (error) {
-      console.error('Error adding template:', error);
-      toast({
-        title: "Ошибка",
-        description: "Не удалось добавить образ",
-        variant: "destructive",
-      });
+      console.error('Error submitting training data:', error);
       throw error;
     }
   };
 
-  const submitTrainingData = async (templateId: string, feedback: string, rating: number, weatherContext: any) => {
-    try {
-      // Получаем текущего пользователя
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        throw new Error('Пользователь не авторизован');
-      }
-
-      const { error } = await supabase
-        .from('stylist_training_data')
-        .insert({
-          user_id: user.id,
-          outfit_template_id: templateId,
-          user_feedback: feedback,
-          rating,
-          weather_context: weatherContext,
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Спасибо!",
-        description: "Ваш отзыв поможет улучшить рекомендации",
-      });
-    } catch (error) {
-      console.error('Error submitting training data:', error);
-      toast({
-        title: "Ошибка",
-        description: "Не удалось отправить отзыв",
-        variant: "destructive",
-      });
-    }
-  };
-
+  // Автоматическая загрузка при монтировании
   useEffect(() => {
     fetchTemplates();
   }, []);
@@ -137,28 +104,6 @@ export const useOutfitTemplates = () => {
     templates,
     loading,
     fetchTemplates,
-    addTemplate,
     submitTrainingData,
   };
-};
-
-// Мапинг погодных условий
-const mapWeatherCondition = (condition: string): string | null => {
-  const conditionMap: Record<string, string> = {
-    'clear': 'clear',
-    'sunny': 'clear',
-    'partly-cloudy': 'partly-cloudy',
-    'cloudy': 'cloudy',
-    'overcast': 'cloudy',
-    'rain': 'light-rain',
-    'drizzle': 'light-rain',
-    'heavy-rain': 'heavy-rain',
-    'snow': 'snow',
-    'sleet': 'snow',
-    'fog': 'cloudy',
-    'mist': 'cloudy',
-    'wind': 'windy',
-  };
-
-  return conditionMap[condition.toLowerCase()] || null;
 };

@@ -348,7 +348,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_random_outfit_templates: {
+        Args: {
+          weather_condition?: string
+          temperature?: number
+          limit_count?: number
+        }
+        Returns: {
+          id: string
+          name: string
+          description: string
+          image_url: string
+          weather_conditions: string[]
+          temperature_min: number
+          temperature_max: number
+          style_category: string
+          season: string
+          occasion: string
+          color_palette: string[]
+          clothing_items: string[]
+          style_tips: string
+          source_url: string
+          is_approved: boolean
+          created_by: string
+          created_at: string
+          updated_at: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
