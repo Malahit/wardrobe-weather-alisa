@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Plus, Upload, Star, Sparkles } from 'lucide-react';
 import { useOutfitTemplates } from '@/hooks/useOutfitTemplates';
+import { supabase } from '@/integrations/supabase/client';
 
 interface OutfitTemplateFormProps {
   weather?: any;
@@ -73,11 +73,15 @@ export const OutfitTemplateForm = ({ weather }: OutfitTemplateFormProps) => {
     e.preventDefault();
     
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
       await addTemplate({
         ...formData,
         temperature_min: formData.temperature_min ? parseInt(formData.temperature_min) : null,
         temperature_max: formData.temperature_max ? parseInt(formData.temperature_max) : null,
         is_approved: false, // Требует модерации
+        created_by: user?.id || null, // Add the missing created_by field
       });
       
       setOpen(false);

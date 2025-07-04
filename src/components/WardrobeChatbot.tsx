@@ -133,6 +133,7 @@ export const WardrobeChatbot = ({ wardrobeItems, weather }: WardrobeChatbotProps
     }
   };
 
+  // Fixed parameter order: required parameters first, optional parameters last
   const generateOutfitSuggestion = (temperature: number, condition?: string) => {
     const availableItems = wardrobeItems.filter(item => {
       if (item.temperature_min && temperature < item.temperature_min) return false;
@@ -173,7 +174,8 @@ export const WardrobeChatbot = ({ wardrobeItems, weather }: WardrobeChatbotProps
     };
   };
 
-  const generateOutfitReason = (temp: number, condition?: string, items: WardrobeItem[]) => {
+  // Fixed parameter order: required parameters first, optional parameters last
+  const generateOutfitReason = (temp: number, condition: string | undefined, items: WardrobeItem[]) => {
     const reasons = [];
     
     if (temp < 10) {
