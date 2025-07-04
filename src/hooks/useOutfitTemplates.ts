@@ -34,7 +34,6 @@ export const useOutfitTemplates = () => {
     try {
       console.log('Fetching outfit templates with weather:', weather);
       
-      // Используем новую функцию для случайной выборки образов
       const { data, error } = await supabase.rpc('get_random_outfit_templates', {
         weather_condition: weather?.condition || null,
         temperature: weather?.temperature || null,
@@ -67,6 +66,33 @@ export const useOutfitTemplates = () => {
     }
   };
 
+  const addTemplate = async (template: Omit<OutfitTemplate, 'id' | 'created_at' | 'updated_at'>) => {
+    try {
+      const { data, error } = await supabase
+        .from('outfit_templates')
+        .insert([template])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Образ добавлен!",
+        description: "Новый образ отправлен на модерацию",
+      });
+
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error adding template:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось добавить образ",
+        variant: "destructive",
+      });
+      return { success: false, error };
+    }
+  };
+
   const submitTrainingData = async (
     templateId: string,
     feedback: string,
@@ -74,6 +100,8 @@ export const useOutfitTemplates = () => {
     weather?: any
   ) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
       const { error } = await supabase
         .from('stylist_training_data')
         .insert({
@@ -85,7 +113,7 @@ export const useOutfitTemplates = () => {
             condition: weather.condition,
             humidity: weather.humidity
           } : null,
-          user_id: (await supabase.auth.getUser()).data.user?.id
+          user_id: user?.id
         });
 
       if (error) throw error;
@@ -95,7 +123,6 @@ export const useOutfitTemplates = () => {
     }
   };
 
-  // Автоматическая загрузка при монтировании
   useEffect(() => {
     fetchTemplates();
   }, []);
@@ -104,6 +131,7 @@ export const useOutfitTemplates = () => {
     templates,
     loading,
     fetchTemplates,
+    addTemplate,
     submitTrainingData,
   };
 };

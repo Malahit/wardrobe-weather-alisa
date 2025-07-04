@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Mic, MicOff, Volume2, MessageSquare, Sparkles, User, Star, RefreshCw } from 'lucide-react';
+import { Mic, MicOff, Volume2, Sparkles, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { WardrobeItem } from '@/hooks/useWardrobe';
 import { OutfitSuggestion, generateOutfitSuggestions } from '@/services/outfitService';
@@ -19,14 +19,6 @@ interface Message {
     reason: string;
     imageUrl?: string;
   };
-}
-
-interface StyleAdvice {
-  title: string;
-  description: string;
-  items: string[];
-  tip: string;
-  confidence: number;
 }
 
 interface SmartOutfitAssistantProps {
@@ -46,10 +38,8 @@ export const SmartOutfitAssistant = ({
   const [isConnected, setIsConnected] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [suggestions, setSuggestions] = useState<OutfitSuggestion[]>([]);
-  const [currentAdvice, setCurrentAdvice] = useState<StyleAdvice | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [activeMode, setActiveMode] = useState<'voice' | 'suggestions' | 'stylist'>('voice');
+  const [activeMode, setActiveMode] = useState<'voice' | 'suggestions'>('voice');
   
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const { toast } = useToast();
@@ -60,7 +50,6 @@ export const SmartOutfitAssistant = ({
   }, [weather, wardrobeItems]);
 
   const initializeSpeechRecognition = async () => {
-    // Проверяем сохраненное состояние разрешения
     const savedPermission = localStorage.getItem('microphone-permission');
     
     if (savedPermission === 'granted') {
@@ -72,7 +61,6 @@ export const SmartOutfitAssistant = ({
       const permission = await navigator.mediaDevices.getUserMedia({ audio: true });
       permission.getTracks().forEach(track => track.stop());
       
-      // Сохраняем разрешение
       localStorage.setItem('microphone-permission', 'granted');
       setupSpeechRecognition();
     } catch (error) {
@@ -201,60 +189,6 @@ export const SmartOutfitAssistant = ({
     }
   };
 
-  const generateStyleAdvice = async () => {
-    setIsGenerating(true);
-    
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const advice = analyzeStyleAndGenerateAdvice();
-    setCurrentAdvice(advice);
-    setIsGenerating(false);
-  };
-
-  const analyzeStyleAndGenerateAdvice = (): StyleAdvice => {
-    const categories = wardrobeItems.reduce((acc, item) => {
-      acc[item.category] = (acc[item.category] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    const colors = wardrobeItems.reduce((acc, item) => {
-      acc[item.color] = (acc[item.color] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    const dominantColor = Object.entries(colors).sort(([,a], [,b]) => b - a)[0]?.[0] || 'нейтральный';
-    const temp = weather?.temperature || 15;
-    
-    const adviceOptions = [
-      {
-        title: "Капсульный гардероб",
-        description: `Ваш гардероб имеет хорошую основу в ${dominantColor} цвете. Рекомендую создать капсульную коллекцию из 10-15 базовых вещей.`,
-        items: [
-          "Базовые футболки нейтральных цветов",
-          "Классические джинсы",
-          "Белая рубашка",
-          "Универсальный пиджак"
-        ],
-        tip: "Правило 70/30: 70% базовых вещей, 30% ярких акцентов",
-        confidence: 0.85
-      },
-      {
-        title: "Сезонный стиль",
-        description: `При температуре ${temp}°C рекомендую многослойность для адаптации к изменениям температуры.`,
-        items: [
-          "Легкий кардиган или жакет",
-          "Базовый топ",
-          "Удобные брюки",
-          "Универсальная обувь"
-        ],
-        tip: temp < 15 ? "Добавьте теплые аксессуары" : "Выбирайте дышащие ткани",
-        confidence: 0.90
-      }
-    ];
-
-    return adviceOptions[Math.floor(Math.random() * adviceOptions.length)];
-  };
-
   const startListening = () => {
     if (recognitionRef.current && !isListening) {
       try {
@@ -300,18 +234,7 @@ export const SmartOutfitAssistant = ({
             }
           >
             <Sparkles className="w-4 h-4 mr-2" />
-            Рекомендации
-          </Button>
-          <Button
-            onClick={() => setActiveMode('stylist')}
-            variant={activeMode === 'stylist' ? 'default' : 'outline'}
-            className={activeMode === 'stylist' 
-              ? 'bg-purple-600 hover:bg-purple-700' 
-              : 'border-white/30 text-white hover:bg-white/10'
-            }
-          >
-            <User className="w-4 h-4 mr-2" />
-            Стилист
+            Рекомендации образов
           </Button>
         </div>
       </Card>
@@ -325,7 +248,7 @@ export const SmartOutfitAssistant = ({
                 <Sparkles className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-800">Голосовой стилист</h2>
+                <h2 className="text-2xl font-bold text-gray-800">Голосовой помощник</h2>
                 <div className="flex items-center space-x-2">
                   <Badge variant={isConnected ? "default" : "destructive"} className="text-xs">
                     {isConnected ? "Готов к работе" : "Недоступен"}
@@ -440,82 +363,6 @@ export const SmartOutfitAssistant = ({
                   />
                 ))
               )}
-            </div>
-          )}
-        </Card>
-      )}
-
-      {/* Stylist Mode */}
-      {activeMode === 'stylist' && (
-        <Card className="p-6 bg-white/10 backdrop-blur-lg border-white/20">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full">
-                <User className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-white">Персональный стилист</h2>
-                <p className="text-white/60">ИИ-анализ вашего стиля</p>
-              </div>
-            </div>
-            
-            <Button
-              onClick={generateStyleAdvice}
-              disabled={isGenerating || wardrobeItems.length === 0}
-              className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600"
-            >
-              {isGenerating ? (
-                <>
-                  <Sparkles className="w-4 h-4 mr-2 animate-spin" />
-                  Анализирую...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Получить совет
-                </>
-              )}
-            </Button>
-          </div>
-
-          {currentAdvice ? (
-            <div className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 rounded-lg p-6 border border-pink-400/30">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold text-white">{currentAdvice.title}</h3>
-                <Badge className="text-green-400 bg-white/10">
-                  <Star className="w-3 h-3 mr-1" />
-                  {Math.round(currentAdvice.confidence * 100)}%
-                </Badge>
-              </div>
-              
-              <p className="text-white/80 mb-6">{currentAdvice.description}</p>
-              
-              <div className="mb-6">
-                <h4 className="text-white font-medium mb-3">Рекомендуемые элементы:</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {currentAdvice.items.map((item, index) => (
-                    <div key={index} className="flex items-center space-x-2 text-white/70">
-                      <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
-                      <span>{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="bg-white/10 rounded-lg p-4">
-                <div className="flex items-start space-x-2">
-                  <Sparkles className="w-5 h-5 text-yellow-400 mt-0.5" />
-                  <div>
-                    <h5 className="text-white font-medium mb-1">Совет стилиста:</h5>
-                    <p className="text-white/80 text-sm">{currentAdvice.tip}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-12 text-white/60">
-              <Sparkles className="w-16 h-16 mx-auto mb-4 text-white/30" />
-              <p className="text-lg">Нажмите кнопку выше для получения персональных рекомендаций</p>
             </div>
           )}
         </Card>
