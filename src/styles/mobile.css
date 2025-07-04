@@ -1,0 +1,81 @@
+
+/* Mobile optimizations for iPhone */
+@media screen and (max-width: 768px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Safe area insets for iPhone notch */
+  .min-h-screen {
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Tab navigation optimization */
+  .grid-cols-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.25rem;
+  }
+
+  /* Touch-friendly buttons */
+  button {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+
+  /* Prevent zoom on form inputs */
+  input, select, textarea {
+    font-size: 16px;
+  }
+
+  /* Optimize card spacing */
+  .space-y-8 > * + * {
+    margin-top: 1.5rem;
+  }
+
+  /* Header adjustments */
+  .text-5xl {
+    font-size: 2.5rem;
+  }
+
+  .text-xl {
+    font-size: 1.125rem;
+  }
+
+  /* Tab content padding */
+  .mt-8 {
+    margin-top: 1.5rem;
+  }
+}
+
+/* iPhone specific optimizations */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari specific styles */
+  .min-h-screen {
+    min-height: -webkit-fill-available;
+  }
+
+  /* Prevent pull-to-refresh */
+  body {
+    overscroll-behavior-y: none;
+  }
+
+  /* Smooth scrolling for iOS */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Dark mode for mobile */
+@media (prefers-color-scheme: dark) {
+  .bg-white\/10 {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .border-white\/20 {
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+}

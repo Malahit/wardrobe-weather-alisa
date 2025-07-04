@@ -6,7 +6,6 @@ import { WardrobeSection } from "@/components/WardrobeSection";
 import { SavedOutfitsSection } from "@/components/SavedOutfitsSection";
 import { WardrobeStatistics } from "@/components/WardrobeStatistics";
 import { MarketplaceRecommendations } from "@/components/MarketplaceRecommendations";
-import { SmartOutfitAssistant } from "@/components/SmartOutfitAssistant";
 import { EnhancedOutfitGallery } from "@/components/EnhancedOutfitGallery";
 import { ShoppingSection } from "@/components/ShoppingSection";
 import { Button } from "@/components/ui/button";
@@ -15,7 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useWardrobe } from "@/hooks/useWardrobe";
 import { useWeather } from "@/hooks/useWeather";
 import { OutfitSuggestion } from "@/services/outfitService";
-import { Mic, Heart, BarChart3, ShoppingBag, Sparkles, LogOut, Image } from "lucide-react";
+import { Heart, BarChart3, ShoppingBag, Sparkles, LogOut, Image } from "lucide-react";
 
 const Index = () => {
   const [currentOutfit, setCurrentOutfit] = useState<OutfitSuggestion | null>(null);
@@ -89,15 +88,8 @@ const Index = () => {
 
         {/* Main Content Tabs */}
         <div className="animate-fade-in">
-          <Tabs defaultValue="assistant" className="w-full">
-            <TabsList className="grid w-full grid-cols-6 bg-white/10 backdrop-blur-lg border-white/20 rounded-2xl p-2">
-              <TabsTrigger 
-                value="assistant" 
-                className="flex items-center space-x-2 data-[state=active]:bg-white/30 data-[state=active]:text-white text-white/70 rounded-xl py-3 font-medium"
-              >
-                <Mic className="w-4 h-4" />
-                <span className="hidden sm:inline">Ассистент</span>
-              </TabsTrigger>
+          <Tabs defaultValue="gallery" className="w-full">
+            <TabsList className="grid w-full grid-cols-5 bg-white/10 backdrop-blur-lg border-white/20 rounded-2xl p-2">
               <TabsTrigger 
                 value="gallery" 
                 className="flex items-center space-x-2 data-[state=active]:bg-white/30 data-[state=active]:text-white text-white/70 rounded-xl py-3 font-medium"
@@ -134,15 +126,6 @@ const Index = () => {
                 <span className="hidden sm:inline">Статистика</span>
               </TabsTrigger>
             </TabsList>
-            
-            <TabsContent value="assistant" className="mt-8">
-              <SmartOutfitAssistant 
-                wardrobeItems={wardrobeItems}
-                weather={weather}
-                currentOutfit={currentOutfit}
-                setCurrentOutfit={setCurrentOutfit}
-              />
-            </TabsContent>
             
             <TabsContent value="gallery" className="mt-8">
               <EnhancedOutfitGallery weather={weather} />
