@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ModernWeatherCard } from "@/components/ModernWeatherCard";
@@ -10,6 +9,8 @@ import { EnhancedOutfitGallery } from "@/components/EnhancedOutfitGallery";
 import { ShoppingSection } from "@/components/ShoppingSection";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SkipLink } from "@/components/ui/skip-link";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { useAuth } from "@/hooks/useAuth";
 import { useWardrobe } from "@/hooks/useWardrobe";
 import { useWeather } from "@/hooks/useWeather";
@@ -31,6 +32,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400">
+      <SkipLink href="#main-content">Перейти к основному содержимому</SkipLink>
+      
       <style>{`
         body {
           font-family: 'Inter', sans-serif;
@@ -45,11 +48,11 @@ const Index = () => {
         {/* Header */}
         <header className="text-center mb-8 relative">
           <div className="flex items-center justify-center space-x-3 mb-2">
-            <span className="text-4xl">✨</span>
+            <span className="text-4xl" role="img" aria-label="sparkles">✨</span>
             <h1 className="text-5xl font-bold text-white animate-fade-in tracking-tight">
               StyleAssistant AI
             </h1>
-            <span className="text-4xl">👗</span>
+            <span className="text-4xl" role="img" aria-label="dress">👗</span>
           </div>
           <p className="text-white/90 text-xl animate-fade-in font-light">
             Ваш персональный стилист с искусственным интеллектом
@@ -69,6 +72,7 @@ const Index = () => {
                 variant="ghost"
                 size="sm"
                 className="text-white/80 hover:text-white hover:bg-white/10 rounded-full"
+                aria-label="Выйти из аккаунта"
               >
                 <LogOut className="w-4 h-4" />
               </Button>
@@ -78,99 +82,120 @@ const Index = () => {
 
         {/* Weather Card */}
         <div className="mb-8 animate-fade-in">
-          <ModernWeatherCard 
-            weather={weather} 
-            loading={weatherLoading} 
-            error={weatherError}
-            onRefresh={refetch}
-          />
+          <ErrorBoundary>
+            <ModernWeatherCard 
+              weather={weather} 
+              loading={weatherLoading} 
+              error={weatherError}
+              onRefresh={refetch}
+            />
+          </ErrorBoundary>
         </div>
 
         {/* Main Content Tabs */}
-        <div className="animate-fade-in">
+        <main id="main-content" className="animate-fade-in">
           <Tabs defaultValue="gallery" className="w-full">
-            <TabsList className="grid w-full grid-cols-5 bg-white/10 backdrop-blur-lg border-white/20 rounded-2xl p-2">
+            <TabsList 
+              className="grid w-full grid-cols-5 bg-white/10 backdrop-blur-lg border-white/20 rounded-2xl p-2"
+              role="tablist"
+              aria-label="Основные разделы приложения"
+            >
               <TabsTrigger 
                 value="gallery" 
                 className="flex items-center space-x-2 data-[state=active]:bg-white/30 data-[state=active]:text-white text-white/70 rounded-xl py-3 font-medium"
+                aria-label="Галерея образов"
               >
-                <Image className="w-4 h-4" />
+                <Image className="w-4 h-4" aria-hidden="true" />
                 <span className="hidden sm:inline">Галерея</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="shopping" 
                 className="flex items-center space-x-2 data-[state=active]:bg-white/30 data-[state=active]:text-white text-white/70 rounded-xl py-3 font-medium"
+                aria-label="Магазин товаров"
               >
-                <ShoppingBag className="w-4 h-4" />
+                <ShoppingBag className="w-4 h-4" aria-hidden="true" />
                 <span className="hidden sm:inline">Магазин</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="wardrobe" 
                 className="flex items-center space-x-2 data-[state=active]:bg-white/30 data-[state=active]:text-white text-white/70 rounded-xl py-3 font-medium"
+                aria-label="Мой гардероб"
               >
-                <Sparkles className="w-4 h-4" />
+                <Sparkles className="w-4 h-4" aria-hidden="true" />
                 <span className="hidden sm:inline">Гардероб</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="saved" 
                 className="flex items-center space-x-2 data-[state=active]:bg-white/30 data-[state=active]:text-white text-white/70 rounded-xl py-3 font-medium"
+                aria-label="Избранные образы"
               >
-                <Heart className="w-4 h-4" />
+                <Heart className="w-4 h-4" aria-hidden="true" />
                 <span className="hidden sm:inline">Избранное</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="statistics" 
                 className="flex items-center space-x-2 data-[state=active]:bg-white/30 data-[state=active]:text-white text-white/70 rounded-xl py-3 font-medium"
+                aria-label="Статистика гардероба"
               >
-                <BarChart3 className="w-4 h-4" />
+                <BarChart3 className="w-4 h-4" aria-hidden="true" />
                 <span className="hidden sm:inline">Статистика</span>
               </TabsTrigger>
             </TabsList>
             
-            <TabsContent value="gallery" className="mt-8">
-              <EnhancedOutfitGallery weather={weather} />
+            <TabsContent value="gallery" className="mt-8" role="tabpanel" aria-labelledby="gallery-tab">
+              <ErrorBoundary>
+                <EnhancedOutfitGallery weather={weather} />
+              </ErrorBoundary>
             </TabsContent>
             
-            <TabsContent value="shopping" className="mt-8">
-              <ShoppingSection />
+            <TabsContent value="shopping" className="mt-8" role="tabpanel" aria-labelledby="shopping-tab">
+              <ErrorBoundary>
+                <ShoppingSection />
+              </ErrorBoundary>
             </TabsContent>
             
-            <TabsContent value="wardrobe" className="space-y-8 mt-8">
-              <WardrobeSection />
-              <MarketplaceRecommendations 
-                weather={weather}
-                wardrobeItems={wardrobeItems}
-              />
+            <TabsContent value="wardrobe" className="space-y-8 mt-8" role="tabpanel" aria-labelledby="wardrobe-tab">
+              <ErrorBoundary>
+                <WardrobeSection />
+                <MarketplaceRecommendations 
+                  weather={weather}
+                  wardrobeItems={wardrobeItems}
+                />
+              </ErrorBoundary>
             </TabsContent>
             
-            <TabsContent value="saved" className="mt-8">
-              <SavedOutfitsSection />
+            <TabsContent value="saved" className="mt-8" role="tabpanel" aria-labelledby="saved-tab">
+              <ErrorBoundary>
+                <SavedOutfitsSection />
+              </ErrorBoundary>
             </TabsContent>
             
-            <TabsContent value="statistics" className="mt-8">
-              <WardrobeStatistics />
+            <TabsContent value="statistics" className="mt-8" role="tabpanel" aria-labelledby="statistics-tab">
+              <ErrorBoundary>
+                <WardrobeStatistics />
+              </ErrorBoundary>
             </TabsContent>
           </Tabs>
-        </div>
+        </main>
 
         {/* Footer */}
-        <footer className="mt-16 text-center text-white/70 text-sm">
+        <footer className="mt-16 text-center text-white/70 text-sm" role="contentinfo">
           <div className="flex items-center justify-center space-x-4 mb-3">
             <span className="font-medium">Создано с ❤️ для стильных людей</span>
           </div>
           <div className="flex items-center justify-center space-x-8 text-xs">
             <span className="flex items-center space-x-2">
-              <span>📊</span>
+              <span role="img" aria-label="chart">📊</span>
               <span>{wardrobeItems.length} вещей в гардеробе</span>
             </span>
             {weather && (
               <span className="flex items-center space-x-2">
-                <span>🌡️</span>
+                <span role="img" aria-label="thermometer">🌡️</span>
                 <span>{weather.temperature}°C сейчас</span>
               </span>
             )}
             <span className="flex items-center space-x-2">
-              <span>✨</span>
+              <span role="img" aria-label="sparkles">✨</span>
               <span>Powered by AI</span>
             </span>
           </div>
