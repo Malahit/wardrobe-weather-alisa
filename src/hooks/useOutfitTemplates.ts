@@ -32,8 +32,23 @@ export const useOutfitTemplates = () => {
   const fetchTemplates = async (weather?: any, forceRefresh = false) => {
     setLoading(true);
     try {
-      console.log('Fetching outfit templates with weather:', weather);
+      console.log('🎨 Fetching outfit templates with weather:', weather);
+      console.log('🌡️ Temperature:', weather?.temperature);
+      console.log('☁️ Condition:', weather?.condition);
       
+      // Сначала проверим, есть ли вообще данные в таблице
+      const { data: allTemplates, error: countError } = await supabase
+        .from('outfit_templates')
+        .select('id, name, is_approved')
+        .limit(5);
+      
+      console.log('📊 Total templates check:', allTemplates?.length, countError);
+      
+      if (countError) {
+        console.error('❌ Error checking templates:', countError);
+      }
+      
+      // Теперь попробуем вызвать RPC функцию
       const { data, error } = await supabase.rpc('get_random_outfit_templates', {
         weather_condition: weather?.condition || null,
         temperature: weather?.temperature || null,
@@ -41,11 +56,18 @@ export const useOutfitTemplates = () => {
       });
 
       if (error) {
-        console.error('Error fetching templates:', error);
+        console.error('❌ RPC Error fetching templates:', error);
+        console.error('Error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
         throw error;
       }
 
-      console.log('Fetched templates:', data?.length);
+      console.log('✅ Fetched templates:', data?.length);
+      console.log('📋 Templates data:', data);
       setTemplates(data || []);
       
       if (forceRefresh && data?.length) {
@@ -55,10 +77,31 @@ export const useOutfitTemplates = () => {
         });
       }
     } catch (error) {
-      console.error('Error fetching outfit templates:', error);
+      console.error('💥 Critical error fetching outfit templates:', error);
+      
+      // Попробуем fallback запрос без RPC
+      try {
+        console.log('🔄 Trying fallback query...');
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('outfit_templates')
+          .select('*')
+          .eq('is_approved', true)
+          .limit(12);
+          
+        if (fallbackError) {
+          console.error('❌ Fallback error:', fallbackError);
+        } else {
+          console.log('✅ Fallback success:', fallbackData?.length);
+          setTemplates(fallbackData || []);
+          return;
+        }
+      } catch (fallbackErr) {
+        console.error('💥 Fallback also failed:', fallbackErr);
+      }
+      
       toast({
         title: "Ошибка",
-        description: "Не удалось загрузить образы",
+        description: `Не удалось загрузить образы: ${error.message}`,
         variant: "destructive",
       });
     } finally {

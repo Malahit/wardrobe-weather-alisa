@@ -41,7 +41,7 @@ export const EnhancedOutfitGallery = ({ weather }: EnhancedOutfitGalleryProps) =
   // Обновление при изменении погоды
   useEffect(() => {
     if (weather) {
-      console.log('Weather changed, fetching new outfits...');
+      console.log('🌤️ Weather changed, fetching new outfits...', weather);
       handleAsyncError(
         () => fetchTemplates(weather, false),
         { showToast: false }
@@ -105,6 +105,9 @@ export const EnhancedOutfitGallery = ({ weather }: EnhancedOutfitGalleryProps) =
           <LoadingSpinner size="lg" className="mx-auto mb-4 text-white/20" />
           <p className="text-lg">Подбираем стильные образы...</p>
           <p className="text-sm mt-2">Учитываем погоду и ваши предпочтения</p>
+          <p className="text-xs mt-4 opacity-60">
+            Загружено образов: {templates.length}
+          </p>
         </div>
       </Card>
     );
@@ -163,8 +166,13 @@ export const EnhancedOutfitGallery = ({ weather }: EnhancedOutfitGalleryProps) =
             <div className="w-20 h-20 bg-white/10 rounded-full mx-auto mb-4 flex items-center justify-center">
               <span className="text-3xl" role="img" aria-label="art palette">🎨</span>
             </div>
-            <p className="text-lg mb-2">Образы не найдены</p>
-            <p>Попробуйте обновить или изменить параметры поиска</p>
+            <p className="text-lg mb-2">Образы не найдены 😔</p>
+            <p className="mb-4">Попробуйте обновить или изменить параметры поиска</p>
+            <div className="text-xs text-white/40 space-y-1">
+              <p>Погода: {weather?.condition} {weather?.temperature}°C</p>
+              <p>Загрузка: {loading ? 'Да' : 'Нет'}</p>
+              <p>Всего образов: {templates.length}</p>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
