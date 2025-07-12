@@ -1,6 +1,16 @@
 
 /* Mobile optimizations for Android and iPhone */
 @media screen and (max-width: 768px) {
+  /* Safe area для всего body - поддержка iPhone notch и Android navigation */
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    min-height: 100vh;
+    min-height: 100dvh; /* Динамическая высота viewport */
+  }
+
   .container {
     padding-left: 1rem;
     padding-right: 1rem;
@@ -10,8 +20,6 @@
   .min-h-screen {
     min-height: 100vh;
     min-height: 100dvh;
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
   }
 
   /* Tab navigation optimization for mobile */

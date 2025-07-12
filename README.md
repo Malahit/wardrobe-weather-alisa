@@ -1,10 +1,71 @@
-# Welcome to your Lovable project
+# StyleAssistant AI
 
-## Project info
+Персональный стилист с ИИ для подбора одежды по погоде и вашему гардеробу.
 
-**URL**: https://lovable.dev/projects/93c184c1-9df6-4365-b82a-c8ca9d5aff1c
+## Развертывание на Vercel
 
-## How can I edit this code?
+### Быстрое развертывание
+
+1. Нажмите кнопку ниже для автоматического развертывания:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/yourrepo)
+
+2. Подключите ваш GitHub репозиторий
+3. Настройте переменные окружения
+4. Нажмите "Deploy"
+
+### Ручное развертывание
+
+1. Установите Vercel CLI:
+```bash
+npm i -g vercel
+```
+
+2. В корне проекта выполните:
+```bash
+vercel
+```
+
+3. Следуйте инструкциям CLI
+
+### Переменные окружения для Vercel
+
+Проект уже настроен с Supabase, переменные не требуются.
+
+## Мобильная адаптация
+
+Приложение оптимизировано для:
+- iPhone (включая модели с notch)
+- iPad
+- Android устройства
+- PWA установка на домашний экран
+
+### Особенности мобильной версии:
+- Адаптивный дизайн для всех размеров экранов
+- Safe area insets для iPhone
+- Touch-friendly интерфейс
+- Оптимизированные шрифты и отступы
+- Поддержка жестов свайпа
+
+## Технологии
+
+- React 18
+- TypeScript
+- Vite
+- Tailwind CSS
+- Supabase
+- Capacitor (для нативных функций)
+
+## PWA Features
+
+- Установка на домашний экран
+- Offline кэширование
+- Адаптивные иконки
+- Полноэкранный режим
+
+## Разработка
+
+### Локальная разработка
 
 There are several ways of editing your application.
 

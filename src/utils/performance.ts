@@ -50,7 +50,7 @@ export const createImageLoader = () => {
       });
     },
     
-    preloadImages: (urls: string[]): Promise<HTMLImageElement[]> => {
+    preloadImages: function(urls: string[]): Promise<HTMLImageElement[]> {
       return Promise.all(urls.map(url => this.loadImage(url)));
     }
   };

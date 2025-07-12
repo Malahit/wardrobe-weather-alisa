@@ -1,0 +1,19 @@
+{
+  "name": "StyleAssistant AI",
+  "short_name": "StyleAssistant",
+  "description": "Ваш персональный стилист с ИИ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#222222",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ],
+  "categories": ["lifestyle", "fashion", "productivity"],
+  "lang": "ru"
+}
