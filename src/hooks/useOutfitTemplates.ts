@@ -29,6 +29,22 @@ export const useOutfitTemplates = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  // Маппинг русских погодных условий на английские
+  const mapWeatherCondition = (russianCondition: string): string | null => {
+    const weatherMap: Record<string, string> = {
+      'ясно': 'clear',
+      'облачно': 'cloudy',
+      'переменная облачность': 'partly-cloudy',
+      'дождь': 'light-rain',
+      'снег': 'snow',
+      'ветрено': 'windy',
+      'туман': 'cloudy'
+    };
+    
+    const condition = russianCondition?.toLowerCase();
+    return weatherMap[condition] || null;
+  };
+
   const fetchTemplates = async (weather?: any, forceRefresh = false) => {
     setLoading(true);
     try {
@@ -36,21 +52,13 @@ export const useOutfitTemplates = () => {
       console.log('🌡️ Temperature:', weather?.temperature);
       console.log('☁️ Condition:', weather?.condition);
       
-      // Сначала проверим, есть ли вообще данные в таблице
-      const { data: allTemplates, error: countError } = await supabase
-        .from('outfit_templates')
-        .select('id, name, is_approved')
-        .limit(5);
-      
-      console.log('📊 Total templates check:', allTemplates?.length, countError);
-      
-      if (countError) {
-        console.error('❌ Error checking templates:', countError);
-      }
+      // Маппинг погодного условия
+      const mappedCondition = weather?.condition ? mapWeatherCondition(weather.condition) : null;
+      console.log('🗂️ Mapped condition:', weather?.condition, '=>', mappedCondition);
       
       // Теперь попробуем вызвать RPC функцию
       const { data, error } = await supabase.rpc('get_random_outfit_templates', {
-        weather_condition: weather?.condition || null,
+        weather_condition: mappedCondition,
         temperature: weather?.temperature || null,
         limit_count: 12
       });
