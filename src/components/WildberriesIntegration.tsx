@@ -77,7 +77,7 @@ export const WildberriesIntegration = ({
 
   const addToWishlist = async (product: WBProduct) => {
     try {
-      await supabase.from('marketplace_recommendations').insert([{
+      await supabase.from('wishlist_items').insert([{
         item_name: product.name,
         marketplace: 'Wildberries',
         price: product.price,

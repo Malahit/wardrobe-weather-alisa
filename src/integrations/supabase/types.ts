@@ -14,13 +14,336 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      outfit_items: {
+        Row: {
+          brand: string | null
+          color: string | null
+          created_at: string
+          currency: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          is_available: boolean | null
+          item_name: string
+          item_type: string
+          material: string | null
+          outfit_template_id: string | null
+          price: number | null
+          shop_url: string | null
+          size_range: string | null
+          updated_at: string
+        }
+        Insert: {
+          brand?: string | null
+          color?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean | null
+          item_name: string
+          item_type: string
+          material?: string | null
+          outfit_template_id?: string | null
+          price?: number | null
+          shop_url?: string | null
+          size_range?: string | null
+          updated_at?: string
+        }
+        Update: {
+          brand?: string | null
+          color?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean | null
+          item_name?: string
+          item_type?: string
+          material?: string | null
+          outfit_template_id?: string | null
+          price?: number | null
+          shop_url?: string | null
+          size_range?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outfit_items_outfit_template_id_fkey"
+            columns: ["outfit_template_id"]
+            isOneToOne: false
+            referencedRelation: "outfit_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      outfit_templates: {
+        Row: {
+          clothing_items: string[]
+          color_palette: string[]
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          image_url: string
+          is_approved: boolean | null
+          name: string
+          occasion: string | null
+          season: string
+          source_url: string | null
+          style_category: string
+          style_tips: string | null
+          temperature_max: number | null
+          temperature_min: number | null
+          updated_at: string
+          weather_conditions: string[]
+        }
+        Insert: {
+          clothing_items?: string[]
+          color_palette?: string[]
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url: string
+          is_approved?: boolean | null
+          name: string
+          occasion?: string | null
+          season: string
+          source_url?: string | null
+          style_category: string
+          style_tips?: string | null
+          temperature_max?: number | null
+          temperature_min?: number | null
+          updated_at?: string
+          weather_conditions?: string[]
+        }
+        Update: {
+          clothing_items?: string[]
+          color_palette?: string[]
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string
+          is_approved?: boolean | null
+          name?: string
+          occasion?: string | null
+          season?: string
+          source_url?: string | null
+          style_category?: string
+          style_tips?: string | null
+          temperature_max?: number | null
+          temperature_min?: number | null
+          updated_at?: string
+          weather_conditions?: string[]
+        }
+        Relationships: []
+      }
+      saved_outfits: {
+        Row: {
+          created_at: string
+          id: string
+          item_ids: string[]
+          last_used: string | null
+          name: string
+          rating: number | null
+          times_used: number
+          updated_at: string
+          user_id: string
+          weather_context: Json | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_ids?: string[]
+          last_used?: string | null
+          name: string
+          rating?: number | null
+          times_used?: number
+          updated_at?: string
+          user_id: string
+          weather_context?: Json | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_ids?: string[]
+          last_used?: string | null
+          name?: string
+          rating?: number | null
+          times_used?: number
+          updated_at?: string
+          user_id?: string
+          weather_context?: Json | null
+        }
+        Relationships: []
+      }
+      stylist_training_data: {
+        Row: {
+          created_at: string
+          id: string
+          outfit_template_id: string
+          rating: number
+          user_feedback: string
+          user_id: string | null
+          weather_context: Json | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          outfit_template_id: string
+          rating: number
+          user_feedback: string
+          user_id?: string | null
+          weather_context?: Json | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          outfit_template_id?: string
+          rating?: number
+          user_feedback?: string
+          user_id?: string | null
+          weather_context?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stylist_training_data_outfit_template_id_fkey"
+            columns: ["outfit_template_id"]
+            isOneToOne: false
+            referencedRelation: "outfit_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wardrobe_items: {
+        Row: {
+          brand: string | null
+          category: string
+          color: string
+          created_at: string
+          id: string
+          image_url: string | null
+          last_worn: string | null
+          name: string
+          season: string
+          temperature_max: number | null
+          temperature_min: number | null
+          times_worn: number
+          updated_at: string
+          user_id: string
+          weather_conditions: string[]
+        }
+        Insert: {
+          brand?: string | null
+          category: string
+          color: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          last_worn?: string | null
+          name: string
+          season: string
+          temperature_max?: number | null
+          temperature_min?: number | null
+          times_worn?: number
+          updated_at?: string
+          user_id: string
+          weather_conditions?: string[]
+        }
+        Update: {
+          brand?: string | null
+          category?: string
+          color?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          last_worn?: string | null
+          name?: string
+          season?: string
+          temperature_max?: number | null
+          temperature_min?: number | null
+          times_worn?: number
+          updated_at?: string
+          user_id?: string
+          weather_conditions?: string[]
+        }
+        Relationships: []
+      }
+      wishlist_items: {
+        Row: {
+          category: string
+          created_at: string
+          external_url: string
+          id: string
+          image_url: string
+          item_name: string
+          marketplace: string
+          price: number
+          user_id: string
+          weather_reason: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          external_url: string
+          id?: string
+          image_url: string
+          item_name: string
+          marketplace: string
+          price: number
+          user_id: string
+          weather_reason: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          external_url?: string
+          id?: string
+          image_url?: string
+          item_name?: string
+          marketplace?: string
+          price?: number
+          user_id?: string
+          weather_reason?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_random_outfit_templates: {
+        Args: {
+          limit_count?: number
+          temperature?: number
+          weather_condition?: string
+        }
+        Returns: {
+          clothing_items: string[]
+          color_palette: string[]
+          created_at: string
+          created_by: string
+          description: string
+          id: string
+          image_url: string
+          is_approved: boolean
+          name: string
+          occasion: string
+          season: string
+          source_url: string
+          style_category: string
+          style_tips: string
+          temperature_max: number
+          temperature_min: number
+          updated_at: string
+          weather_conditions: string[]
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

@@ -74,11 +74,11 @@ export const useOutfitTemplates = () => {
         throw error;
       }
 
-      console.log('✅ Fetched templates:', data?.length);
+      console.log('✅ Fetched templates:', data?.length || 0);
       console.log('📋 Templates data:', data);
       setTemplates(data || []);
       
-      if (forceRefresh && data?.length) {
+      if (forceRefresh && data && data.length > 0) {
         toast({
           title: "Образы обновлены!",
           description: `Загружено ${data.length} новых образов под текущую погоду`,

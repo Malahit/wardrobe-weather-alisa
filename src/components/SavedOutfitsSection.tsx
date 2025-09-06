@@ -124,8 +124,8 @@ export const SavedOutfitsSection = () => {
                   </div>
                 </div>
 
-                {outfit.description && (
-                  <p className="text-white/70 text-sm mb-3">{outfit.description}</p>
+                {outfit.weather_context?.reason && (
+                  <p className="text-white/70 text-sm mb-3">{outfit.weather_context.reason}</p>
                 )}
 
                 <div className="space-y-2 mb-4">
@@ -148,14 +148,14 @@ export const SavedOutfitsSection = () => {
                 </div>
 
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {outfit.weather_condition && (
+                  {outfit.weather_context?.condition && (
                     <Badge variant="secondary" className="text-xs bg-blue-500/20 text-blue-200">
-                      {outfit.weather_condition}
+                      {outfit.weather_context.condition}
                     </Badge>
                   )}
-                  {outfit.temperature && (
+                  {outfit.weather_context?.temperature && (
                     <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-200">
-                      {outfit.temperature}°C
+                      {outfit.weather_context.temperature}°C
                     </Badge>
                   )}
                   <Badge variant="secondary" className="text-xs bg-purple-500/20 text-purple-200">

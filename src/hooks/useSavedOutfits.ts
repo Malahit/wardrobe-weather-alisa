@@ -8,12 +8,11 @@ export interface SavedOutfit {
   id: string;
   name: string;
   item_ids: string[];
-  rating?: number;
+  rating?: number | null;
   times_used: number;
-  last_used?: string;
-  weather_condition?: string;
-  temperature?: number;
-  description?: string;
+  user_id: string;
+  weather_context?: any | null;
+  last_used?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -32,7 +31,7 @@ export const useSavedOutfits = () => {
   const fetchSavedOutfits = async () => {
     try {
       const { data, error } = await supabase
-        .from('outfits')
+        .from('saved_outfits')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -48,14 +47,16 @@ export const useSavedOutfits = () => {
   const saveOutfit = async (outfit: OutfitSuggestion, name: string, weather?: any) => {
     try {
       const { data, error } = await supabase
-        .from('outfits')
+        .from('saved_outfits')
         .insert([{
           name,
           item_ids: outfit.items.map(item => item.id),
-          description: outfit.reason,
-          weather_condition: weather?.condition,
-          temperature: weather?.temperature,
-          user_id: user?.id
+          user_id: user?.id,
+          weather_context: weather ? {
+            condition: weather.condition,
+            temperature: weather.temperature,
+            reason: outfit.reason
+          } : null
         }])
         .select()
         .single();
@@ -73,7 +74,7 @@ export const useSavedOutfits = () => {
   const deleteOutfit = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('outfits')
+        .from('saved_outfits')
         .delete()
         .eq('id', id);
 
@@ -93,7 +94,7 @@ export const useSavedOutfits = () => {
       if (!outfit) return { success: false };
 
       const { error } = await supabase
-        .from('outfits')
+        .from('saved_outfits')
         .update({
           times_used: outfit.times_used + 1,
           last_used: new Date().toISOString().split('T')[0]
@@ -133,7 +134,7 @@ export const useSavedOutfits = () => {
   const rateOutfit = async (id: string, rating: number) => {
     try {
       const { error } = await supabase
-        .from('outfits')
+        .from('saved_outfits')
         .update({ rating })
         .eq('id', id);
 

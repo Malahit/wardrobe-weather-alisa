@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Database } from '@/integrations/supabase/types';
+import { Database } from '@/types/supabase';
 
 type WardrobeItemDB = Database['public']['Tables']['wardrobe_items']['Row'];
 
@@ -82,6 +82,10 @@ export const useWardrobe = () => {
 
       if (error) throw error;
       
+      if (!data) {
+        throw new Error('No data returned from insert');
+      }
+
       // Преобразуем новый элемент в нужный формат
       const newItem: WardrobeItem = {
         id: data.id,
@@ -135,6 +139,10 @@ export const useWardrobe = () => {
 
       if (error) throw error;
       
+      if (!data) {
+        throw new Error('No data returned from update');
+      }
+
       // Преобразуем обновленный элемент в нужный формат
       const updatedItem: WardrobeItem = {
         id: data.id,
