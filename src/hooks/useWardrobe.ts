@@ -29,16 +29,29 @@ export const useWardrobe = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (user) {
-      fetchWardrobeItems();
-    }
-  }, [user]);
+    fetchWardrobeItems();
+  }, [user]); // Убираем зависимость от user, чтобы загружать данные и без авторизации
 
   const fetchWardrobeItems = async () => {
+    if (!user) {
+      // Если пользователь не авторизован, используем локальное хранилище
+      try {
+        const localItems = localStorage.getItem('wardrobe_items');
+        if (localItems) {
+          setItems(JSON.parse(localItems));
+        }
+      } catch (error) {
+        console.error('Error loading local wardrobe items:', error);
+      }
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('wardrobe_items')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -71,11 +84,29 @@ export const useWardrobe = () => {
 
   const addItem = async (item: Omit<WardrobeItem, 'id' | 'created_at' | 'updated_at' | 'times_worn'>) => {
     try {
+      if (!user) {
+        // Для неавторизованных пользователей сохраняем в локальное хранилище
+        const newItem: WardrobeItem = {
+          ...item,
+          id: Date.now().toString(),
+          times_worn: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        
+        const currentItems = JSON.parse(localStorage.getItem('wardrobe_items') || '[]');
+        const updatedItems = [newItem, ...currentItems];
+        localStorage.setItem('wardrobe_items', JSON.stringify(updatedItems));
+        setItems(updatedItems);
+        
+        return { success: true };
+      }
+
       const { data, error } = await supabase
         .from('wardrobe_items')
         .insert([{
           ...item,
-          user_id: user?.id
+          user_id: user.id
         }])
         .select()
         .single();
@@ -114,6 +145,15 @@ export const useWardrobe = () => {
 
   const removeItem = async (id: string) => {
     try {
+      if (!user) {
+        // Для неавторизованных пользователей работаем с локальным хранилищем
+        const currentItems = JSON.parse(localStorage.getItem('wardrobe_items') || '[]');
+        const updatedItems = currentItems.filter((item: WardrobeItem) => item.id !== id);
+        localStorage.setItem('wardrobe_items', JSON.stringify(updatedItems));
+        setItems(updatedItems);
+        return { success: true };
+      }
+
       const { error } = await supabase
         .from('wardrobe_items')
         .delete()

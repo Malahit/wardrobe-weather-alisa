@@ -57,7 +57,17 @@ const Index = () => {
           <p className="text-white/90 text-xl animate-fade-in font-light">
             Ваш персональный стилист с искусственным интеллектом
           </p>
-          {user && (
+          
+          {!user && (
+            <div className="mt-4 p-3 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 max-w-lg mx-auto">
+              <p className="text-white/80 text-sm">
+                💡 Приложение работает без регистрации! Все данные сохраняются локально. 
+                <br />
+                Для синхронизации между устройствами можно создать аккаунт.
+              </p>
+            </div>
+          )}
+          {user ? (
             <div className="absolute top-0 right-0 flex items-center space-x-4">
               <div className="text-right">
                 <div className="text-white/90 font-medium">
@@ -75,6 +85,18 @@ const Index = () => {
                 aria-label="Выйти из аккаунта"
               >
                 <LogOut className="w-4 h-4" />
+              </Button>
+            </div>
+          ) : (
+            <div className="absolute top-0 right-0">
+              <Button
+                onClick={() => navigate('/auth')}
+                variant="ghost"
+                size="sm"
+                className="text-white/80 hover:text-white hover:bg-white/10 rounded-full"
+                aria-label="Войти в аккаунт"
+              >
+                Войти
               </Button>
             </div>
           )}

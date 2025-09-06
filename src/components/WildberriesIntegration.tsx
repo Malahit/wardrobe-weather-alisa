@@ -77,6 +77,26 @@ export const WildberriesIntegration = ({
 
   const addToWishlist = async (product: WBProduct) => {
     try {
+      if (!user) {
+        // Для неавторизованных пользователей сохраняем в локальное хранилище
+        const wishlistItem = {
+          id: Date.now().toString(),
+          item_name: product.name,
+          marketplace: 'Wildberries',
+          price: product.price,
+          external_url: product.url,
+          category: product.category,
+          image_url: product.images[0],
+          weather_reason: weather ? `Подходит для ${weather.temperature}°C` : 'Добавлено в избранное',
+          created_at: new Date().toISOString()
+        };
+        
+        const currentWishlist = JSON.parse(localStorage.getItem('wishlist_items') || '[]');
+        const updatedWishlist = [wishlistItem, ...currentWishlist];
+        localStorage.setItem('wishlist_items', JSON.stringify(updatedWishlist));
+        return;
+      }
+
       await supabase.from('wishlist_items').insert([{
         item_name: product.name,
         marketplace: 'Wildberries',
@@ -84,8 +104,8 @@ export const WildberriesIntegration = ({
         external_url: product.url,
         category: product.category,
         image_url: product.images[0],
-        weather_reason: weather ? `Подходит для ${weather.temperature}°C` : null,
-        user_id: user?.id
+        weather_reason: weather ? `Подходит для ${weather.temperature}°C` : 'Добавлено в избранное',
+        user_id: user.id
       }]);
     } catch (error) {
       console.error('Error adding to wishlist:', error);

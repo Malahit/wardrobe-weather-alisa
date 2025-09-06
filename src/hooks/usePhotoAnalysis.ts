@@ -20,7 +20,7 @@ export const usePhotoAnalysis = () => {
   const { user } = useAuth();
 
   const analyzePhoto = async (imageFile: File): Promise<PhotoAnalysisResult | null> => {
-    if (!user || !imageFile) return null;
+    if (!imageFile) return null;
 
     try {
       setAnalyzing(true);
@@ -32,7 +32,7 @@ export const usePhotoAnalysis = () => {
       const { data, error } = await supabase.functions.invoke('analyze-clothing', {
         body: { 
           image: base64Image,
-          userId: user.id 
+          userId: user?.id || null
         }
       });
 
@@ -44,7 +44,7 @@ export const usePhotoAnalysis = () => {
           category: 'other',
           color: 'неопределенный',
           season: 'all-season',
-          brand: null,
+          brand: undefined,
           confidence: 0.6,
           description: 'Добавлено без анализа'
         };
@@ -73,7 +73,7 @@ export const usePhotoAnalysis = () => {
         category: 'other',
         color: 'неопределенный',
         season: 'all-season',
-        brand: null,
+        brand: undefined,
         confidence: 0.5,
         description: 'Ошибка анализа'
       };
@@ -89,9 +89,32 @@ export const usePhotoAnalysis = () => {
     imageFile: File,
     customName?: string
   ): Promise<{ success: boolean; item?: WardrobeItem }> => {
-    if (!user) return { success: false };
-
     try {
+      if (!user) {
+        // Для неавторизованных пользователей создаем item без загрузки изображения
+        const newItem: WardrobeItem = {
+          id: Date.now().toString(),
+          name: customName || analysis.name,
+          category: analysis.category,
+          color: analysis.color,
+          season: analysis.season,
+          brand: analysis.brand,
+          image_url: undefined, // Локально не сохраняем изображения
+          weather_conditions: getWeatherConditions(analysis.season, analysis.category),
+          temperature_min: getTemperatureRange(analysis.season, analysis.category).min,
+          temperature_max: getTemperatureRange(analysis.season, analysis.category).max,
+          times_worn: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        
+        const currentItems = JSON.parse(localStorage.getItem('wardrobe_items') || '[]');
+        const updatedItems = [newItem, ...currentItems];
+        localStorage.setItem('wardrobe_items', JSON.stringify(updatedItems));
+        
+        return { success: true, item: newItem };
+      }
+
       // Загружаем изображение в storage
       const fileName = `${user.id}/${Date.now()}_${imageFile.name}`;
       const { data: uploadData, error: uploadError } = await supabase.storage

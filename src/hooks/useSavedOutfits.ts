@@ -23,16 +23,30 @@ export const useSavedOutfits = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (user) {
-      fetchSavedOutfits();
-    }
+    fetchSavedOutfits();
   }, [user]);
 
   const fetchSavedOutfits = async () => {
+    if (!user) {
+      // Для неавторизованных пользователей используем локальное хранилище
+      try {
+        const localOutfits = localStorage.getItem('saved_outfits');
+        if (localOutfits) {
+          setSavedOutfits(JSON.parse(localOutfits));
+        }
+      } catch (error) {
+        console.error('Error loading local saved outfits:', error);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('saved_outfits')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -46,12 +60,37 @@ export const useSavedOutfits = () => {
 
   const saveOutfit = async (outfit: OutfitSuggestion, name: string, weather?: any) => {
     try {
+      if (!user) {
+        // Для неавторизованных пользователей сохраняем в локальное хранилище
+        const newOutfit: SavedOutfit = {
+          id: Date.now().toString(),
+          name,
+          item_ids: outfit.items.map(item => item.id),
+          times_used: 0,
+          user_id: 'local',
+          weather_context: weather ? {
+            condition: weather.condition,
+            temperature: weather.temperature,
+            reason: outfit.reason
+          } : null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        
+        const currentOutfits = JSON.parse(localStorage.getItem('saved_outfits') || '[]');
+        const updatedOutfits = [newOutfit, ...currentOutfits];
+        localStorage.setItem('saved_outfits', JSON.stringify(updatedOutfits));
+        setSavedOutfits(updatedOutfits);
+        
+        return { success: true };
+      }
+
       const { data, error } = await supabase
         .from('saved_outfits')
         .insert([{
           name,
           item_ids: outfit.items.map(item => item.id),
-          user_id: user?.id,
+          user_id: user.id,
           weather_context: weather ? {
             condition: weather.condition,
             temperature: weather.temperature,
@@ -73,6 +112,15 @@ export const useSavedOutfits = () => {
 
   const deleteOutfit = async (id: string) => {
     try {
+      if (!user) {
+        // Для неавторизованных пользователей работаем с локальным хранилищем
+        const currentOutfits = JSON.parse(localStorage.getItem('saved_outfits') || '[]');
+        const updatedOutfits = currentOutfits.filter((outfit: SavedOutfit) => outfit.id !== id);
+        localStorage.setItem('saved_outfits', JSON.stringify(updatedOutfits));
+        setSavedOutfits(updatedOutfits);
+        return { success: true };
+      }
+
       const { error } = await supabase
         .from('saved_outfits')
         .delete()
@@ -92,6 +140,19 @@ export const useSavedOutfits = () => {
     try {
       const outfit = savedOutfits.find(o => o.id === id);
       if (!outfit) return { success: false };
+
+      if (!user) {
+        // Для неавторизованных пользователей обновляем локальное хранилище
+        const currentOutfits = JSON.parse(localStorage.getItem('saved_outfits') || '[]');
+        const updatedOutfits = currentOutfits.map((o: SavedOutfit) => 
+          o.id === id 
+            ? { ...o, times_used: o.times_used + 1, last_used: new Date().toISOString() }
+            : o
+        );
+        localStorage.setItem('saved_outfits', JSON.stringify(updatedOutfits));
+        setSavedOutfits(updatedOutfits);
+        return { success: true };
+      }
 
       const { error } = await supabase
         .from('saved_outfits')
@@ -133,6 +194,17 @@ export const useSavedOutfits = () => {
 
   const rateOutfit = async (id: string, rating: number) => {
     try {
+      if (!user) {
+        // Для неавторизованных пользователей обновляем локальное хранилище
+        const currentOutfits = JSON.parse(localStorage.getItem('saved_outfits') || '[]');
+        const updatedOutfits = currentOutfits.map((o: SavedOutfit) => 
+          o.id === id ? { ...o, rating } : o
+        );
+        localStorage.setItem('saved_outfits', JSON.stringify(updatedOutfits));
+        setSavedOutfits(updatedOutfits);
+        return { success: true };
+      }
+
       const { error } = await supabase
         .from('saved_outfits')
         .update({ rating })
